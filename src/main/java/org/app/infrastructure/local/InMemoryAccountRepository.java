@@ -1,7 +1,7 @@
 package org.app.infrastructure.local;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import org.app.domain.Account;
+import org.app.domain.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,37 +11,37 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class InMemoryAccountRepository {
-    private List<Account> accounts;
+    private List<User> users;
 
     public InMemoryAccountRepository() {
-        this.accounts = new ArrayList<>();
+        this.users = new ArrayList<>();
     }
 
-    public void addAccount(Account account) {
-        this.accounts.add(account);
+    public void addAccount(User user) {
+        this.users.add(user);
     }
 
-    private Optional<Account> filterAccountId(List<Account> accounts, UUID accountId){
-        return accounts.stream().filter(account -> account.getId().equals(accountId)).findFirst();
+    private Optional<User> filterAccountId(List<User> users, UUID accountId){
+        return users.stream().filter(account -> account.getId().equals(accountId)).findFirst();
     }
 
-    public Account findAccount(UUID accountId) {
-        return filterAccountId(this.accounts, accountId).orElse(null);
+    public User findAccount(UUID accountId) {
+        return filterAccountId(this.users, accountId).orElse(null);
     }
 
-    private Optional<Account> filterAccountUsername(List<Account> accounts, String username){
-        return accounts.stream().filter(account -> account.getUsername().equals(username)).findFirst();
+    private Optional<User> filterAccountUsername(List<User> users, String username){
+        return users.stream().filter(account -> account.getUsername().equals(username)).findFirst();
     }
 
-    public Account findAccountByUsername(String username) {
-        return filterAccountUsername(this.accounts, username).orElse(null);
+    public User findAccountByUsername(String username) {
+        return filterAccountUsername(this.users, username).orElse(null);
     }
 
-    public void updateAccounts(List<Account> accounts) {
-        this.accounts = this.accounts.stream().map(account -> filterAccountId(accounts, account.getId()).orElse(account)).collect(Collectors.toList());
+    public void updateAccounts(List<User> users) {
+        this.users = this.users.stream().map(account -> filterAccountId(users, account.getId()).orElse(account)).collect(Collectors.toList());
     }
 
-    public void removeAccounts(List<Account> accounts) {
-        this.accounts = this.accounts.stream().filter(account -> filterAccountId(accounts, account.getId()).isEmpty()).collect(Collectors.toList());
+    public void removeAccounts(List<User> users) {
+        this.users = this.users.stream().filter(account -> filterAccountId(users, account.getId()).isEmpty()).collect(Collectors.toList());
     }
 }

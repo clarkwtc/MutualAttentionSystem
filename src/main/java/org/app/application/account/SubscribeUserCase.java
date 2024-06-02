@@ -2,7 +2,7 @@ package org.app.application.account;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.app.domain.Account;
+import org.app.domain.User;
 import org.app.domain.exceptions.NotExistAccountException;
 import org.app.infrastructure.repositories.AccountRepository;
 
@@ -16,16 +16,16 @@ public class SubscribeUserCase {
     AccountRepository accountRepository;
 
     public void execute(String accountId, String subscriptionId){
-        Account account = accountRepository.findAccount(UUID.fromString(accountId));
-        Account subscription = accountRepository.findAccount(UUID.fromString(subscriptionId));
+        User user = accountRepository.findAccount(UUID.fromString(accountId));
+        User subscription = accountRepository.findAccount(UUID.fromString(subscriptionId));
 
-        if (Objects.isNull(account) || Objects.isNull(subscription)){
+        if (Objects.isNull(user) || Objects.isNull(subscription)){
             throw new NotExistAccountException();
         }
 
-        account.subscribe(subscription);
+        user.subscribe(subscription);
 
-        List<Account> accounts = List.of(account, subscription);
-        accountRepository.updateAccounts(accounts);
+        List<User> users = List.of(user, subscription);
+        accountRepository.updateAccounts(users);
     }
 }

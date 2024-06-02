@@ -2,7 +2,7 @@ package org.app.infrastructure.repositories;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.app.domain.Account;
+import org.app.domain.User;
 import org.app.domain.IAccountRepository;
 import org.app.infrastructure.local.InMemoryAccountRepository;
 
@@ -15,22 +15,22 @@ public class AccountRepository implements IAccountRepository {
     InMemoryAccountRepository inMemoryAccountRepository;
 
     @Override
-    public void registerAccount(Account account) {
-        inMemoryAccountRepository.addAccount(account);
+    public void registerAccount(User user) {
+        inMemoryAccountRepository.addAccount(user);
     }
 
     @Override
-    public Account findAccount(UUID accountId) {
+    public User findAccount(UUID accountId) {
         return inMemoryAccountRepository.findAccount(accountId);
     }
 
     @Override
-    public Account findAccountByUsername(String username) {
+    public User findAccountByUsername(String username) {
         return inMemoryAccountRepository.findAccountByUsername(username);
     }
 
     @Override
-    public void updateAccounts(List<Account> accounts) {
-        inMemoryAccountRepository.updateAccounts(accounts);
+    public void updateAccounts(List<User> users) {
+        inMemoryAccountRepository.updateAccounts(users);
     }
 }

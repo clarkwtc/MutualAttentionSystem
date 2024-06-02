@@ -1,6 +1,6 @@
 package org.app.infrastructure.endpoints.dto;
 
-import org.app.domain.Account;
+import org.app.domain.User;
 
 import java.util.List;
 
@@ -9,13 +9,12 @@ public class GetFollowerListDTO {
     public String nickname;
     public String username;
 
-    public GetFollowerListDTO(Account account) {
-        this.id = account.getId().toString();
-        this.nickname = account.getNickname();
-        this.username = account.getUsername();
+    public GetFollowerListDTO(User user) {
+        this.id = user.getId().toString();
+        this.username = user.getUsername();
     }
 
-    public static List<GetFollowerListDTO> from(Account account){
-        return account.getFollower().stream().map(GetFollowerListDTO::new).toList();
+    public static List<GetFollowerListDTO> from(User user){
+        return user.getFans().stream().map(GetFollowerListDTO::new).toList();
     }
 }

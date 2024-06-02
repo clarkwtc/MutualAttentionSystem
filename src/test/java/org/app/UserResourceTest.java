@@ -5,7 +5,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import jakarta.inject.Inject;
-import org.app.domain.Account;
+import org.app.domain.User;
 import org.app.domain.exceptions.ExceptionMessage;
 import org.app.infrastructure.endpoints.dto.GetAccountDTO;
 import org.app.infrastructure.endpoints.dto.RegisterAccountDTO;
@@ -21,26 +21,26 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-class AccountResourceTest {
+class UserResourceTest {
     @Inject
     InMemoryAccountRepository repository;
 
-    List<Account> accounts;
+    List<User> users;
 
     @BeforeEach
     void setUp(){
-        Account account1 = new Account("sk22", "bb753951", "lisa");
-        Account account2 = new Account("cp200", "cc456850", "mega");
-        accounts = new ArrayList<>();
-        accounts.add(account1);
-        accounts.add(account2);
-        accounts.forEach(repository::addAccount);
+        User user1 = new User("sk22");
+        User user2 = new User("cp200");
+        users = new ArrayList<>();
+        users.add(user1);
+        users.add(user2);
+        users.forEach(repository::addAccount);
     }
 
     @AfterEach
     void tearDown(){
-        repository.removeAccounts(accounts);
-        accounts.clear();
+        repository.removeAccounts(users);
+        users.clear();
     }
 
 
@@ -98,10 +98,10 @@ class AccountResourceTest {
     @Test
     void getAccount() {
         // Given
-        Account account = accounts.get(0);
+        User user = users.get(0);
 
         RequestSpecification requestSpecification = given()
-                .queryParam("id", account.getId().toString());
+                .queryParam("id", user.getId().toString());
 
         // When
         Response response = requestSpecification
@@ -114,12 +114,11 @@ class AccountResourceTest {
                 .extract().body()
                 .as(GetAccountDTO.class);
 
-        Assertions.assertEquals(registerAccountDTO.id, account.getId().toString());
-        Assertions.assertEquals(registerAccountDTO.username, account.getUsername());
-        Assertions.assertEquals(registerAccountDTO.nickname, account.getNickname());
-        Assertions.assertEquals(registerAccountDTO.followers, account.getSubscription().size());
-        Assertions.assertEquals(registerAccountDTO.friends, account.getFriends().size());
-        Assertions.assertEquals(registerAccountDTO.fans, account.getFollower().size());
+        Assertions.assertEquals(registerAccountDTO.id, user.getId().toString());
+        Assertions.assertEquals(registerAccountDTO.username, user.getUsername());
+        Assertions.assertEquals(registerAccountDTO.followers, user.getFollowings().size());
+        Assertions.assertEquals(registerAccountDTO.friends, user.getFriends().size());
+        Assertions.assertEquals(registerAccountDTO.fans, user.getFans().size());
     }
 
     @Test
@@ -144,13 +143,13 @@ class AccountResourceTest {
     @Test
     void addFriend() {
         // Given
-        Account account = accounts.get(0);
-        Account friend = accounts.get(1);
+        User user = users.get(0);
+        User friend = users.get(1);
         Map<String, Object> body = new HashMap<>();
         body.put("friendId", friend.getId());
 
         RequestSpecification requestSpecification = given()
-                .pathParam("id", account.getId().toString())
+                .pathParam("id", user.getId().toString())
                 .contentType(ContentType.JSON)
                 .body(body);
 
@@ -161,8 +160,8 @@ class AccountResourceTest {
 
         // Then
         response.then().statusCode(200);
-        Assertions.assertEquals(friend, repository.findAccount(account.getId()).getFriends().get(0));
-        Assertions.assertEquals(account, repository.findAccount(friend.getId()).getFriends().get(0));
+        Assertions.assertEquals(friend, repository.findAccount(user.getId()).getFriends().get(0));
+        Assertions.assertEquals(user, repository.findAccount(friend.getId()).getFriends().get(0));
     }
 
     @ParameterizedTest
@@ -172,7 +171,7 @@ class AccountResourceTest {
         UUID friendId = UUID.randomUUID();
         UUID accountId = UUID.randomUUID();
         if (isAccount){
-            accountId = accounts.get(0).getId();
+            accountId = users.get(0).getId();
         }
 
         Map<String, Object> body = new HashMap<>();
@@ -206,13 +205,12 @@ class AccountResourceTest {
     @Test
     void getFriendList() {
         // Given
-        Account account = accounts.get(0);
-        Account friend = accounts.get(1);
-        account.addFriend(friend);
-        repository.updateAccounts(List.of(account));
+        User user = users.get(0);
+        User friend = users.get(1);
+        repository.updateAccounts(List.of(user));
 
         RequestSpecification requestSpecification = given()
-                .pathParam("id", account.getId().toString());
+                .pathParam("id", user.getId().toString());
 
         // When
         Response response = requestSpecification
@@ -228,23 +226,21 @@ class AccountResourceTest {
             Map<String, String> getFriendListDTO = (Map<String, String>) object;
             Assertions.assertEquals(getFriendListDTO.get("id"), friend.getId().toString());
             Assertions.assertEquals(getFriendListDTO.get("username"), friend.getUsername());
-            Assertions.assertEquals(getFriendListDTO.get("nickname"), friend.getNickname());
         }
     }
 
     @Test
     void removeFriend() {
         // Given
-        Account account = accounts.get(0);
-        Account friend = accounts.get(1);
-        account.addFriend(friend);
-        repository.updateAccounts(List.of(account, friend));
+        User user = users.get(0);
+        User friend = users.get(1);
+        repository.updateAccounts(List.of(user, friend));
 
         Map<String, Object> body = new HashMap<>();
         body.put("friendId", friend.getId());
 
         RequestSpecification requestSpecification = given()
-                .pathParam("id", account.getId().toString())
+                .pathParam("id", user.getId().toString())
                 .contentType(ContentType.JSON)
                 .body(body);
 
@@ -255,7 +251,7 @@ class AccountResourceTest {
 
         // Then
         response.then().statusCode(200);
-        Assertions.assertEquals(0, repository.findAccount(account.getId()).getFriends().size());
+        Assertions.assertEquals(0, repository.findAccount(user.getId()).getFriends().size());
         Assertions.assertEquals(0, repository.findAccount(friend.getId()).getFriends().size());
     }
 
@@ -263,7 +259,7 @@ class AccountResourceTest {
     void removeNotExistedFriendFail() {
         // Given
         UUID accountId = UUID.randomUUID();
-        UUID friendId = accounts.get(0).getId();
+        UUID friendId = users.get(0).getId();
 
         Map<String, Object> body = new HashMap<>();
         body.put("friendId", friendId);
@@ -289,13 +285,13 @@ class AccountResourceTest {
     @Test
     void subscribe() {
         // Given
-        Account account = accounts.get(0);
-        Account subscription = accounts.get(1);
+        User user = users.get(0);
+        User subscription = users.get(1);
         Map<String, Object> body = new HashMap<>();
         body.put("subscriptionId", subscription.getId());
 
         RequestSpecification requestSpecification = given()
-                .pathParam("id", account.getId().toString())
+                .pathParam("id", user.getId().toString())
                 .contentType(ContentType.JSON)
                 .body(body);
 
@@ -306,8 +302,8 @@ class AccountResourceTest {
 
         // Then
         response.then().statusCode(200);
-        Assertions.assertEquals(subscription, repository.findAccount(account.getId()).getSubscription().get(0));
-        Assertions.assertEquals(account, repository.findAccount(subscription.getId()).getFollower().get(0));
+        Assertions.assertEquals(subscription, repository.findAccount(user.getId()).getFollowings().get(0));
+        Assertions.assertEquals(user, repository.findAccount(subscription.getId()).getFans().get(0));
     }
 
     @ParameterizedTest
@@ -317,7 +313,7 @@ class AccountResourceTest {
         UUID subscriptionId = UUID.randomUUID();
         UUID accountId = UUID.randomUUID();
         if (isAccount){
-            accountId = accounts.get(0).getId();
+            accountId = users.get(0).getId();
         }
 
         Map<String, Object> body = new HashMap<>();
@@ -349,15 +345,15 @@ class AccountResourceTest {
     }
 
     @Test
-    void getSubscriptionList() {
+    void getFollowingsList() {
         // Given
-        Account account = accounts.get(0);
-        Account subscription = accounts.get(1);
-        account.subscribe(subscription);
-        repository.updateAccounts(List.of(account));
+        User user = users.get(0);
+        User subscription = users.get(1);
+        user.subscribe(subscription);
+        repository.updateAccounts(List.of(user));
 
         RequestSpecification requestSpecification = given()
-                .pathParam("id", account.getId().toString());
+                .pathParam("id", user.getId().toString());
 
         // When
         Response response = requestSpecification
@@ -373,23 +369,22 @@ class AccountResourceTest {
             Map<String, String> getSubscriptionListDTO = (Map<String, String>) object;
             Assertions.assertEquals(getSubscriptionListDTO.get("id"), subscription.getId().toString());
             Assertions.assertEquals(getSubscriptionListDTO.get("username"), subscription.getUsername());
-            Assertions.assertEquals(getSubscriptionListDTO.get("nickname"), subscription.getNickname());
         }
     }
 
     @Test
     void unsubscribe() {
         // Given
-        Account account = accounts.get(0);
-        Account subscription = accounts.get(1);
-        account.subscribe(subscription);
-        repository.updateAccounts(List.of(account, subscription));
+        User user = users.get(0);
+        User subscription = users.get(1);
+        user.subscribe(subscription);
+        repository.updateAccounts(List.of(user, subscription));
 
         Map<String, Object> body = new HashMap<>();
         body.put("subscriptionId", subscription.getId());
 
         RequestSpecification requestSpecification = given()
-                .pathParam("id", account.getId().toString())
+                .pathParam("id", user.getId().toString())
                 .contentType(ContentType.JSON)
                 .body(body);
 
@@ -400,15 +395,15 @@ class AccountResourceTest {
 
         // Then
         response.then().statusCode(200);
-        Assertions.assertEquals(0, repository.findAccount(account.getId()).getSubscription().size());
-        Assertions.assertEquals(0, repository.findAccount(subscription.getId()).getFollower().size());
+        Assertions.assertEquals(0, repository.findAccount(user.getId()).getFollowings().size());
+        Assertions.assertEquals(0, repository.findAccount(subscription.getId()).getFans().size());
     }
 
     @Test
     void unsubscribeNotAccountFail() {
         // Given
         UUID accountId = UUID.randomUUID();
-        UUID subscriptionId = accounts.get(0).getId();
+        UUID subscriptionId = users.get(0).getId();
 
         Map<String, Object> body = new HashMap<>();
         body.put("subscriptionId", subscriptionId);
@@ -429,12 +424,12 @@ class AccountResourceTest {
     }
 
     @Test
-    void getFollowerList() {
+    void getFansList() {
         // Given
-        Account account = accounts.get(0);
-        Account subscription = accounts.get(1);
-        account.subscribe(subscription);
-        repository.updateAccounts(List.of(account));
+        User user = users.get(0);
+        User subscription = users.get(1);
+        user.subscribe(subscription);
+        repository.updateAccounts(List.of(user));
 
         RequestSpecification requestSpecification = given()
                 .pathParam("id", subscription.getId().toString());
@@ -451,22 +446,21 @@ class AccountResourceTest {
 
         for (Object object: getFanListDTOs) {
             Map<String, String> getFollowerListDTO = (Map<String, String>) object;
-            Assertions.assertEquals(getFollowerListDTO.get("id"), account.getId().toString());
-            Assertions.assertEquals(getFollowerListDTO.get("username"), account.getUsername());
-            Assertions.assertEquals(getFollowerListDTO.get("nickname"), account.getNickname());
+            Assertions.assertEquals(getFollowerListDTO.get("id"), user.getId().toString());
+            Assertions.assertEquals(getFollowerListDTO.get("username"), user.getUsername());
         }
     }
 
     @Test
     void removeFollower() {
         // Given
-        Account account = accounts.get(0);
-        Account subscription = accounts.get(1);
-        account.subscribe(subscription);
-        repository.updateAccounts(List.of(account, subscription));
+        User user = users.get(0);
+        User subscription = users.get(1);
+        user.subscribe(subscription);
+        repository.updateAccounts(List.of(user, subscription));
 
         Map<String, Object> body = new HashMap<>();
-        body.put("followerId", account.getId());
+        body.put("followerId", user.getId());
 
         RequestSpecification requestSpecification = given()
                 .pathParam("id", subscription.getId().toString())
@@ -480,7 +474,7 @@ class AccountResourceTest {
 
         // Then
         response.then().statusCode(200);
-        Assertions.assertEquals(0, repository.findAccount(subscription.getId()).getFollower().size());
-        Assertions.assertEquals(0, repository.findAccount(account.getId()).getSubscription().size());
+        Assertions.assertEquals(0, repository.findAccount(subscription.getId()).getFans().size());
+        Assertions.assertEquals(0, repository.findAccount(user.getId()).getFollowings().size());
     }
 }

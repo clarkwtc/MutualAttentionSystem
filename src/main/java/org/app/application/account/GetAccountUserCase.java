@@ -2,7 +2,7 @@ package org.app.application.account;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.app.domain.Account;
+import org.app.domain.User;
 import org.app.domain.exceptions.NotExistAccountException;
 import org.app.infrastructure.repositories.AccountRepository;
 
@@ -14,11 +14,11 @@ public class GetAccountUserCase {
     @Inject
     AccountRepository accountRepository;
 
-    public Account execute(String accountId){
-        Account account = accountRepository.findAccount(UUID.fromString(accountId));
-        if (Objects.isNull(account)){
+    public User execute(String accountId){
+        User user = accountRepository.findAccount(UUID.fromString(accountId));
+        if (Objects.isNull(user)){
             throw new NotExistAccountException();
         }
-        return account;
+        return user;
     }
 }

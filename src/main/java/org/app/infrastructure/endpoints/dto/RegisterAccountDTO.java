@@ -1,6 +1,6 @@
 package org.app.infrastructure.endpoints.dto;
 
-import org.app.domain.Account;
+import org.app.domain.User;
 
 public class RegisterAccountDTO {
     public String id;
@@ -8,11 +8,11 @@ public class RegisterAccountDTO {
     public RegisterAccountDTO() {
     }
 
-    public RegisterAccountDTO(Account account) {
-        this.id = account.getId().toString();
+    public RegisterAccountDTO(User user) {
+        this.id = user.getId().toString();
     }
 
-    public static RegisterAccountDTO from(Account account){
-        return new RegisterAccountDTO(account);
+    public static RegisterAccountDTO from(User user){
+        return new RegisterAccountDTO(user);
     }
 }

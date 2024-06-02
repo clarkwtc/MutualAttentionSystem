@@ -1,6 +1,6 @@
 package org.app.infrastructure.endpoints.dto;
 
-import org.app.domain.Account;
+import org.app.domain.User;
 
 public class GetAccountDTO {
     public String id;
@@ -12,16 +12,15 @@ public class GetAccountDTO {
 
     public GetAccountDTO() {}
 
-    public GetAccountDTO(Account account) {
-        this.id = account.getId().toString();
-        this.nickname = account.getNickname();
-        this.username = account.getUsername();
-        this.followers = account.getSubscription().size();
-        this.friends = account.getFriends().size();
-        this.fans = account.getFollower().size();
+    public GetAccountDTO(User user) {
+        this.id = user.getId().toString();
+        this.username = user.getUsername();
+        this.followers = user.getFollowings().size();
+        this.friends = user.getFriends().size();
+        this.fans = user.getFans().size();
     }
 
-    public static GetAccountDTO from(Account account){
-        return new GetAccountDTO(account);
+    public static GetAccountDTO from(User user){
+        return new GetAccountDTO(user);
     }
 }

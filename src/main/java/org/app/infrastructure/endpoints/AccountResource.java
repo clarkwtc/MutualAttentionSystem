@@ -8,7 +8,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.app.application.account.*;
-import org.app.domain.Account;
+import org.app.domain.User;
 import org.app.infrastructure.endpoints.dto.*;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
@@ -41,8 +41,8 @@ public class AccountResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response registerAccount(@Valid registerAccountBody body) {
-        Account account = registerAccountUserCase.execute(body.username, body.password, body.nickname);
-        return Response.ok(RegisterAccountDTO.from(account)).status(Response.Status.CREATED).build();
+        User user = registerAccountUserCase.execute(body.username, body.password, body.nickname);
+        return Response.ok(RegisterAccountDTO.from(user)).status(Response.Status.CREATED).build();
     }
 
     public static class AccountQuery {
@@ -55,8 +55,8 @@ public class AccountResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAccount(@BeanParam @Valid AccountQuery params) {
-        Account account = getAccountUserCase.execute(params.id);
-        return Response.ok(GetAccountDTO.from(account)).build();
+        User user = getAccountUserCase.execute(params.id);
+        return Response.ok(GetAccountDTO.from(user)).build();
     }
 
     public static class AccountPath{
@@ -83,8 +83,8 @@ public class AccountResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/friends")
     public Response getFriendList(@BeanParam AccountPath path) {
-        Account account = getAccountUserCase.execute(path.id);
-        return Response.ok(GetFriendListDTO.from(account)).build();
+        User user = getAccountUserCase.execute(path.id);
+        return Response.ok(GetFriendListDTO.from(user)).build();
     }
 
     @DELETE
@@ -115,8 +115,8 @@ public class AccountResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/subscriptions")
     public Response getSubscriptionList(@BeanParam AccountPath path) {
-        Account account = getAccountUserCase.execute(path.id);
-        return Response.ok(GetSubscriptionListDTO.from(account)).build();
+        User user = getAccountUserCase.execute(path.id);
+        return Response.ok(GetSubscriptionListDTO.from(user)).build();
     }
 
     @DELETE
@@ -133,8 +133,8 @@ public class AccountResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/followers")
     public Response getFollowerList(@BeanParam AccountPath path) {
-        Account account = getAccountUserCase.execute(path.id);
-        return Response.ok(GetFollowerListDTO.from(account)).build();
+        User user = getAccountUserCase.execute(path.id);
+        return Response.ok(GetFollowerListDTO.from(user)).build();
     }
 
     public static class RemoveFollowerBody {
