@@ -8,5 +8,7 @@ public interface IAccountRepository {
 
     Account findAccount(UUID accountId);
 
+    Account findAccountByUsername(String username);
+
     void updateAccounts(List<Account> accounts);
 }

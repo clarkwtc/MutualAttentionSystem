@@ -26,7 +26,15 @@ public class InMemoryAccountRepository {
     }
 
     public Account findAccount(UUID accountId) {
-        return filterAccountId(this.accounts, accountId).orElseThrow();
+        return filterAccountId(this.accounts, accountId).orElse(null);
+    }
+
+    private Optional<Account> filterAccountUsername(List<Account> accounts, String username){
+        return accounts.stream().filter(account -> account.getUsername().equals(username)).findFirst();
+    }
+
+    public Account findAccountByUsername(String username) {
+        return filterAccountUsername(this.accounts, username).orElse(null);
     }
 
     public void updateAccounts(List<Account> accounts) {

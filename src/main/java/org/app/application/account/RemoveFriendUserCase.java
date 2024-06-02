@@ -3,9 +3,11 @@ package org.app.application.account;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.app.domain.Account;
+import org.app.domain.exceptions.NotExistAccountException;
 import org.app.infrastructure.repositories.AccountRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -16,6 +18,14 @@ public class RemoveFriendUserCase {
     public void execute(String accountId, String friendId){
         Account account = accountRepository.findAccount(UUID.fromString(accountId));
         Account friend = accountRepository.findAccount(UUID.fromString(friendId));
+        if (Objects.isNull(account)){
+            throw new NotExistAccountException();
+        }
+
+        if (Objects.isNull(friend)){
+            return;
+        }
+
         account.removeFriend(friend);
 
         List<Account> accounts = List.of(account, friend);

@@ -1,5 +1,7 @@
 package org.app.domain;
 
+import org.app.domain.exceptions.DuplicatedAccountException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -65,7 +67,7 @@ public class Account {
 
     public void addFriend(Account friend){
         if (friends.contains(friend)){
-            return;
+            throw new DuplicatedAccountException();
         }
         friend.getFriends().add(this);
         friends.add(friend);

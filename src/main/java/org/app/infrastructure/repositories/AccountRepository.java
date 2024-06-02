@@ -25,6 +25,11 @@ public class AccountRepository implements IAccountRepository {
     }
 
     @Override
+    public Account findAccountByUsername(String username) {
+        return inMemoryAccountRepository.findAccountByUsername(username);
+    }
+
+    @Override
     public void updateAccounts(List<Account> accounts) {
         inMemoryAccountRepository.updateAccounts(accounts);
     }

@@ -6,15 +6,17 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import jakarta.inject.Inject;
 import org.app.domain.Account;
+import org.app.domain.exceptions.ExceptionMessage;
 import org.app.infrastructure.endpoints.dto.GetAccountDTO;
 import org.app.infrastructure.endpoints.dto.RegisterAccountDTO;
 import org.app.infrastructure.local.InMemoryAccountRepository;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 
@@ -69,6 +71,31 @@ class AccountResourceTest {
     }
 
     @Test
+    void registerDuplicatedAccountFail() {
+        // Given
+        Map<String, Object> body = new HashMap<>();
+        body.put("username", "sk22");
+        body.put("password", "bb753951");
+        body.put("nickname", "lisa");
+
+        RequestSpecification requestSpecification = given()
+                .contentType(ContentType.JSON)
+                .body(body);
+
+        // When
+        Response response = requestSpecification
+                .when()
+                .post("/accounts");
+
+        // Then
+        String message = response.then().statusCode(409)
+                .extract().body()
+                .asPrettyString();
+
+        Assertions.assertEquals(ExceptionMessage.DUPLICATED_USERNAME, message);
+    }
+
+    @Test
     void getAccount() {
         // Given
         Account account = accounts.get(0);
@@ -96,6 +123,25 @@ class AccountResourceTest {
     }
 
     @Test
+    void getNotExistedAccountFail() {
+        // Given
+        RequestSpecification requestSpecification = given()
+                .queryParam("id", UUID.randomUUID());
+
+        // When
+        Response response = requestSpecification
+                .when()
+                .get("/accounts");
+
+        // Then
+        String message = response.then().statusCode(404)
+                .extract().body()
+                .asPrettyString();
+
+        Assertions.assertEquals(ExceptionMessage.NOT_EXIST_ACCOUNT, message);
+    }
+
+    @Test
     void addFriend() {
         // Given
         Account account = accounts.get(0);
@@ -117,6 +163,44 @@ class AccountResourceTest {
         response.then().statusCode(200);
         Assertions.assertEquals(friend, repository.findAccount(account.getId()).getFriends().get(0));
         Assertions.assertEquals(account, repository.findAccount(friend.getId()).getFriends().get(0));
+    }
+
+    @ParameterizedTest
+    @MethodSource()
+    void addNotExistedFriendFail(boolean isAccount) {
+        // Given
+        UUID friendId = UUID.randomUUID();
+        UUID accountId = UUID.randomUUID();
+        if (isAccount){
+            accountId = accounts.get(0).getId();
+        }
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("friendId", friendId);
+
+        RequestSpecification requestSpecification = given()
+                .pathParam("id", accountId)
+                .contentType(ContentType.JSON)
+                .body(body);
+
+        // When
+        Response response = requestSpecification
+                .when()
+                .post("/accounts/{id}/add_friend");
+
+        // Then
+        String message = response.then().statusCode(404)
+                .extract().body()
+                .asPrettyString();
+
+        Assertions.assertEquals(ExceptionMessage.NOT_EXIST_ACCOUNT, message);
+    }
+
+    private static Stream<Arguments> addNotExistedFriendFail(){
+        return Stream.of(
+                Arguments.of(true),
+                Arguments.of(false )
+        );
     }
 
     @Test
@@ -176,6 +260,33 @@ class AccountResourceTest {
     }
 
     @Test
+    void removeNotExistedFriendFail() {
+        // Given
+        UUID accountId = UUID.randomUUID();
+        UUID friendId = accounts.get(0).getId();
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("friendId", friendId);
+
+        RequestSpecification requestSpecification = given()
+                .pathParam("id", accountId)
+                .contentType(ContentType.JSON)
+                .body(body);
+
+        // When
+        Response response = requestSpecification
+                .when()
+                .delete("/accounts/{id}/remove_friend");
+
+        // Then
+        String message = response.then().statusCode(404)
+                .extract().body()
+                .asPrettyString();
+
+        Assertions.assertEquals(ExceptionMessage.NOT_EXIST_ACCOUNT, message);
+    }
+
+    @Test
     void subscribe() {
         // Given
         Account account = accounts.get(0);
@@ -197,6 +308,44 @@ class AccountResourceTest {
         response.then().statusCode(200);
         Assertions.assertEquals(subscription, repository.findAccount(account.getId()).getSubscription().get(0));
         Assertions.assertEquals(account, repository.findAccount(subscription.getId()).getFollower().get(0));
+    }
+
+    @ParameterizedTest
+    @MethodSource()
+    void subscribeNotExistAccountFail(boolean isAccount) {
+        // Given
+        UUID subscriptionId = UUID.randomUUID();
+        UUID accountId = UUID.randomUUID();
+        if (isAccount){
+            accountId = accounts.get(0).getId();
+        }
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("subscriptionId", subscriptionId);
+
+        RequestSpecification requestSpecification = given()
+                .pathParam("id", accountId)
+                .contentType(ContentType.JSON)
+                .body(body);
+
+        // When
+        Response response = requestSpecification
+                .when()
+                .post("/accounts/{id}/subscribe");
+
+        // Then
+        String message = response.then().statusCode(404)
+                .extract().body()
+                .asPrettyString();
+
+        Assertions.assertEquals(ExceptionMessage.NOT_EXIST_ACCOUNT, message);
+    }
+
+    private static Stream<Arguments> subscribeNotExistAccountFail(){
+        return Stream.of(
+                Arguments.of(true),
+                Arguments.of(false )
+        );
     }
 
     @Test
@@ -253,6 +402,30 @@ class AccountResourceTest {
         response.then().statusCode(200);
         Assertions.assertEquals(0, repository.findAccount(account.getId()).getSubscription().size());
         Assertions.assertEquals(0, repository.findAccount(subscription.getId()).getFollower().size());
+    }
+
+    @Test
+    void unsubscribeNotAccountFail() {
+        // Given
+        UUID accountId = UUID.randomUUID();
+        UUID subscriptionId = accounts.get(0).getId();
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("subscriptionId", subscriptionId);
+
+        RequestSpecification requestSpecification = given()
+                .pathParam("id", accountId)
+                .contentType(ContentType.JSON)
+                .body(body);
+
+        // When
+        Response response = requestSpecification
+                .when()
+                .delete("/accounts/{id}/unsubscribe");
+
+        // Then
+        String message = response.then().statusCode(404).extract().asPrettyString();
+        Assertions.assertEquals(message, ExceptionMessage.NOT_EXIST_ACCOUNT);
     }
 
     @Test
