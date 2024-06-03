@@ -5,8 +5,11 @@ import jakarta.inject.Inject;
 import org.app.domain.MutualAttentionSystem;
 import org.app.domain.Relationship;
 import org.app.domain.User;
+import org.app.domain.events.FanEvent;
+import org.app.domain.events.FriendEvent;
 import org.app.infrastructure.repositories.RelationshipRepository;
 import org.app.infrastructure.repositories.UserRepository;
+import org.app.infrastructure.utils.Pageable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -14,24 +17,28 @@ import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
-public class GetUserUserCase {
+public class GetFriendsUserCase {
     @Inject
     UserRepository userRepository;
     @Inject
     RelationshipRepository relationshipRepository;
 
-    public User execute(String userId){
+    public FriendEvent execute(String userId, int page, int limit){
         List<User> users = userRepository.find(UUID.fromString(userId));
         MutualAttentionSystem system = new MutualAttentionSystem();
+        system.setUsers(users);
 
         List<Relationship> relationships = relationshipRepository.findByUserId(UUID.fromString(userId));
         setUserInfoInRelationship(userRepository.find(toUUIDList(relationships, userId)), relationships);
 
-
-        system.setUsers(users);
         User user = system.getUser(userId);
         user.setRelationships(relationships);
-        return system.getUser(userId);
+
+        List<User> friends = user.getFriends();
+        Pageable pageable = new Pageable(page, limit, friends.size());
+        friends = friends.isEmpty() ? friends: friends.subList(pageable.getOffset(), pageable.getEnd());
+
+        return new FriendEvent(friends, page, limit, pageable.getTotalPage());
     }
 
     private List<UUID> toUUIDList(List<Relationship> relationships, String userId){

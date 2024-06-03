@@ -36,6 +36,6 @@ public class RelationshipData {
     }
 
     public static Relationship toDomain(RelationshipData relationshipData){
-        return new Relationship(new User(UUID.fromString(relationshipData.getFollowingId()), null), new User(UUID.fromString(relationshipData.getFanId()), null),relationshipData.isFriend);
+        return new Relationship(new User(UUID.fromString(relationshipData.getFollowingId()), null), new User(UUID.fromString(relationshipData.getFanId()), null), relationshipData.isFriend);
     }
 }

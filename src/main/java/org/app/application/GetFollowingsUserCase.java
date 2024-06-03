@@ -5,19 +5,24 @@ import jakarta.inject.Inject;
 import org.app.domain.MutualAttentionSystem;
 import org.app.domain.Relationship;
 import org.app.domain.User;
+import org.app.domain.events.FollowingEvent;
 import org.app.infrastructure.repositories.RelationshipRepository;
 import org.app.infrastructure.repositories.UserRepository;
+import org.app.infrastructure.utils.Pageable;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @ApplicationScoped
-public class GetUserWithRelationshipUserCase {
+public class GetFollowingsUserCase {
     @Inject
     UserRepository userRepository;
     @Inject
     RelationshipRepository relationshipRepository;
 
-    public User execute(String userId){
+    public FollowingEvent execute(String userId, int page, int limit){
         List<User> users = userRepository.find(UUID.fromString(userId));
         MutualAttentionSystem system = new MutualAttentionSystem();
         system.setUsers(users);
@@ -27,8 +32,14 @@ public class GetUserWithRelationshipUserCase {
 
         User user = system.getUser(userId);
         user.setRelationships(relationships);
-        return user;
+
+        List<User> followings = user.getFollowings();
+        Pageable pageable = new Pageable(page, limit, followings.size());
+        followings = followings.isEmpty() ? followings: followings.subList(pageable.getOffset(), pageable.getEnd());
+
+        return new FollowingEvent(followings, page, limit, pageable.getTotalPage());
     }
+
 
     private List<UUID> toUUIDList(List<Relationship> relationships, String userId){
         Set<UUID> userIds = new HashSet<>();

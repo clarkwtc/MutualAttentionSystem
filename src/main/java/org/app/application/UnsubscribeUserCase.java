@@ -18,6 +18,7 @@ public class UnsubscribeUserCase {
     @Inject
     RelationshipRepository relationshipRepository;
 
+
     public void execute(String userId, String followingId){
         List<User> users = userRepository.find(UUID.fromString(userId));
         List<User> follows = userRepository.find(UUID.fromString(followingId));

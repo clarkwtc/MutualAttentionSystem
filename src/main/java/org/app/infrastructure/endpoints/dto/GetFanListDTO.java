@@ -1,19 +1,30 @@
 package org.app.infrastructure.endpoints.dto;
 
-import org.app.domain.User;
+import org.app.domain.events.FanEvent;
 
 import java.util.List;
 
 public class GetFanListDTO {
-    public String id;
-    public String username;
+    public List<GetUserItemDTO> fans;
+    public int page;
+    public int limit;
+    public int totalPage;
 
-    public GetFanListDTO(User user) {
-        this.id = user.getId().toString();
-        this.username = user.getUsername();
+    public GetFanListDTO(List<GetUserItemDTO> fans, int page, int limit, int totalPage) {
+        this.fans = fans;
+        this.page = page;
+        this.limit = limit;
+        this.totalPage = totalPage;
     }
 
-    public static List<GetFanListDTO> from(User user){
-        return user.getFans().stream().map(GetFanListDTO::new).toList();
+    public GetFanListDTO(FanEvent event) {
+        this.fans = event.getFans().stream().map(GetUserItemDTO::new).toList();
+        this.page = event.getPage();
+        this.limit = event.getLimit();
+        this.totalPage = event.getTotalPage();
+    }
+
+    public static GetFanListDTO from(FanEvent event){
+        return new GetFanListDTO(event);
     }
 }

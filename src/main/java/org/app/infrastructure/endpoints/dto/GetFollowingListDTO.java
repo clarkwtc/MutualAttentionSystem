@@ -1,19 +1,30 @@
 package org.app.infrastructure.endpoints.dto;
 
-import org.app.domain.User;
+import org.app.domain.events.FollowingEvent;
 
 import java.util.List;
 
 public class GetFollowingListDTO {
-    public String id;
-    public String username;
+    public List<GetUserItemDTO> following;
+    public int page;
+    public int limit;
+    public int totalPage;
 
-    public GetFollowingListDTO(User user) {
-        this.id = user.getId().toString();
-        this.username = user.getUsername();
+    public GetFollowingListDTO(List<GetUserItemDTO> following, int page, int limit, int totalPage) {
+        this.following = following;
+        this.page = page;
+        this.limit = limit;
+        this.totalPage = totalPage;
     }
 
-    public static List<GetFollowingListDTO> from(User user){
-        return user.getFollowings().stream().map(GetFollowingListDTO::new).toList();
+    public GetFollowingListDTO(FollowingEvent event) {
+        this.following = event.getFollowings().stream().map(GetUserItemDTO::new).toList();
+        this.page = event.getPage();
+        this.limit = event.getLimit();
+        this.totalPage = event.getTotalPage();
+    }
+
+    public static GetFollowingListDTO from(FollowingEvent event){
+        return new GetFollowingListDTO(event);
     }
 }

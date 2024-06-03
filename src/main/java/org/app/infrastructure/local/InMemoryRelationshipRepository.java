@@ -30,8 +30,7 @@ public class InMemoryRelationshipRepository implements IRelationshipRepository {
 
     @Override
     public List<Relationship> find(UUID followingId, UUID fanId) {
-        List<RelationshipData> relationshipData = relationships.stream().filter(relationship -> matchFollowingAndFanWithRelationship(relationship, followingId, fanId)).collect(Collectors.toList());
-        return toRelationships(relationshipData);
+        return relationships.stream().filter(relationship -> matchFollowingAndFanWithRelationship(relationship, followingId, fanId)).map(RelationshipData::toDomain).collect(Collectors.toList());
     }
 
     private boolean matchRelationship(RelationshipData relationship, String followingId, String fanId){
@@ -40,8 +39,7 @@ public class InMemoryRelationshipRepository implements IRelationshipRepository {
 
     @Override
     public List<Relationship> findByFollowingId(UUID followingId, UUID fanId) {
-        List<RelationshipData> relationshipData = relationships.stream().filter(relationship -> matchRelationship(relationship, followingId.toString(), fanId.toString())).collect(Collectors.toList());
-        return toRelationships(relationshipData);
+        return relationships.stream().filter(relationship -> matchRelationship(relationship, followingId.toString(), fanId.toString())).map(RelationshipData::toDomain).collect(Collectors.toList());
     }
 
     private boolean matchFollowingOrFanWithRelationship(RelationshipData relationship, UUID userId){
@@ -50,13 +48,18 @@ public class InMemoryRelationshipRepository implements IRelationshipRepository {
 
     @Override
     public List<Relationship> findByUserId(UUID userId) {
-        List<RelationshipData> relationshipData = relationships.stream().filter(relationship -> matchFollowingOrFanWithRelationship(relationship, userId)).collect(Collectors.toList());
-        return toRelationships(relationshipData);
+        return relationships.stream().filter(relationship -> matchFollowingOrFanWithRelationship(relationship, userId)).map(RelationshipData::toDomain).collect(Collectors.toList());
     }
 
     @Override
     public void addAll(List<Relationship> relationships) {
-        this.relationships.addAll(toRelationshipsData(relationships));
+        List<RelationshipData> relationshipsData = toRelationshipsData(relationships);
+        List<RelationshipData> delRelationships = this.relationships.stream()
+                .filter(relationshipData -> relationshipsData
+                        .stream().anyMatch(relationship -> matchRelationship(relationship, relationshipData.getFollowingId(), relationshipData.getFanId())))
+                .collect(Collectors.toList());
+        this.relationships.removeAll(delRelationships);
+        this.relationships.addAll(relationshipsData);
     }
 
     private Optional<RelationshipData> getRelationship(List<RelationshipData> relationshipsData, RelationshipData targetRelationship){

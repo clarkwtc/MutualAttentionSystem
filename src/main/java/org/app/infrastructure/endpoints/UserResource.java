@@ -2,6 +2,8 @@ package org.app.infrastructure.endpoints;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
@@ -9,6 +11,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.app.application.*;
 import org.app.domain.User;
+import org.app.domain.events.FanEvent;
+import org.app.domain.events.FollowingEvent;
+import org.app.domain.events.FriendEvent;
 import org.app.infrastructure.endpoints.dto.*;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
@@ -24,7 +29,11 @@ public class UserResource {
     @Inject
     UnsubscribeUserCase unsubscribeUserCase;
     @Inject
-    GetUserWithRelationshipUserCase getUserWithRelationshipUserCase;
+    GetFollowingsUserCase getFollowingsUserCase;
+    @Inject
+    GetFansUserCase getFansUserCase;
+    @Inject
+    GetFriendsUserCase getFriendsUserCase;
 
     public static class registerUserBody {
         @NotBlank(message = "username is required")
@@ -76,35 +85,47 @@ public class UserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/followings")
-    public Response getFollowingList(@BeanParam UserPath path) {
-        User user = getUserWithRelationshipUserCase.execute(path.id);
-        return Response.ok(GetFollowingListDTO.from(user)).build();
+    public Response getFollowingList(@BeanParam UserPath path, @Valid PageBody body) {
+        FollowingEvent event = getFollowingsUserCase.execute(path.id, body.page, body.limit);
+        return Response.ok(GetFollowingListDTO.from(event)).build();
     }
 
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/unsubscribe")
-    public Response unsubscribe(@BeanParam UserPath path, @Valid UserResource.FollowingBody body) {
+    public Response unsubscribe(@BeanParam UserPath path, @Valid FollowingBody body) {
         unsubscribeUserCase.execute(path.id, body.followingId);
         return Response.ok().build();
+    }
+
+    public static class PageBody {
+        @RestQuery
+        @Min(1)
+        @DefaultValue("1")
+        public int page;
+        @RestQuery
+        @Min(1)
+        @Max(30)
+        @DefaultValue("10")
+        public int limit;
     }
 
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/fans")
-    public Response getFanList(@BeanParam UserPath path) {
-        User user = getUserWithRelationshipUserCase.execute(path.id);
-        return Response.ok(GetFanListDTO.from(user)).build();
+    public Response getFanList(@BeanParam UserPath path, @Valid PageBody body) {
+        FanEvent event = getFansUserCase.execute(path.id, body.page, body.limit);
+        return Response.ok(GetFanListDTO.from(event)).build();
     }
 
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/friends")
-    public Response getFriendList(@BeanParam UserPath path) {
-        User user = getUserWithRelationshipUserCase.execute(path.id);
-        return Response.ok(GetFriendListDTO.from(user)).build();
+    public Response getFriendList(@BeanParam UserPath path, @Valid PageBody body) {
+        FriendEvent event = getFriendsUserCase.execute(path.id, body.page, body.limit);
+        return Response.ok(GetFriendListDTO.from(event)).build();
     }
 }

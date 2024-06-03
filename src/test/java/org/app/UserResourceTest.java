@@ -8,8 +8,7 @@ import jakarta.inject.Inject;
 import org.app.domain.Relationship;
 import org.app.domain.User;
 import org.app.domain.exceptions.ExceptionMessage;
-import org.app.infrastructure.endpoints.dto.GetUserDTO;
-import org.app.infrastructure.endpoints.dto.RegisterUserDTO;
+import org.app.infrastructure.endpoints.dto.*;
 import org.app.infrastructure.local.InMemoryRelationshipRepository;
 import org.app.infrastructure.local.InMemoryUserRepository;
 import org.junit.jupiter.api.*;
@@ -221,15 +220,14 @@ class UserResourceTest {
                 .get("/users/{id}/followings");
 
         // Then
-        List<?> getFollowingsListDTOs = response.then().statusCode(200)
+        GetFollowingListDTO getFollowingsListDTOs = response.then().statusCode(200)
                 .extract().body()
-                .as(ArrayList.class);
+                .as(GetFollowingListDTO.class);
 
-        Assertions.assertEquals(1, getFollowingsListDTOs.size());
-        for (Object object: getFollowingsListDTOs) {
-            Map<String, String> getFollowingsListDTO = (Map<String, String>) object;
-            Assertions.assertEquals(getFollowingsListDTO.get("id"), following.getId().toString());
-            Assertions.assertEquals(getFollowingsListDTO.get("username"), following.getUsername());
+        Assertions.assertEquals(1, getFollowingsListDTOs.following.size());
+        for (GetUserItemDTO getUserItemDTO: getFollowingsListDTOs.following) {
+            Assertions.assertEquals(following.getId().toString(), getUserItemDTO.id);
+            Assertions.assertEquals(following.getUsername(), getUserItemDTO.username);
         }
     }
 
@@ -305,15 +303,14 @@ class UserResourceTest {
                 .get("/users/{id}/fans");
 
         // Then
-        List<?> getFanListDTOs = response.then().statusCode(200)
+        GetFanListDTO getFanListDTOs = response.then().statusCode(200)
                 .extract().body()
-                .as(ArrayList.class);
+                .as(GetFanListDTO.class);
 
-        Assertions.assertEquals(1, getFanListDTOs.size());
-        for (Object object: getFanListDTOs) {
-            Map<String, String> getFanListDTO = (Map<String, String>) object;
-            Assertions.assertEquals(getFanListDTO.get("id"), user.getId().toString());
-            Assertions.assertEquals(getFanListDTO.get("username"), user.getUsername());
+        Assertions.assertEquals(1, getFanListDTOs.fans.size());
+        for (GetUserItemDTO getUserItemDTO: getFanListDTOs.fans) {
+            Assertions.assertEquals(user.getId().toString(), getUserItemDTO.id);
+            Assertions.assertEquals(user.getUsername(), getUserItemDTO.username);
         }
     }
 
@@ -373,15 +370,14 @@ class UserResourceTest {
                 .get("/users/{id}/friends");
 
         // Then
-        List<?> getFriendListDTOs = response.then().statusCode(200)
+        GetFriendListDTO getFriendListDTOs = response.then().statusCode(200)
                 .extract().body()
-                .as(ArrayList.class);
+                .as(GetFriendListDTO.class);
 
-        Assertions.assertEquals(1, getFriendListDTOs.size());
-        for (Object object: getFriendListDTOs) {
-            Map<String, String> getFriendListDTO = (Map<String, String>) object;
-            Assertions.assertEquals(getFriendListDTO.get("id"), friend.getId().toString());
-            Assertions.assertEquals(getFriendListDTO.get("username"), friend.getUsername());
+        Assertions.assertEquals(1, getFriendListDTOs.friends.size());
+        for (GetUserItemDTO getUserItemDTO: getFriendListDTOs.friends) {
+            Assertions.assertEquals(friend.getId().toString(), getUserItemDTO.id);
+            Assertions.assertEquals(friend.getUsername(), getUserItemDTO.username);
         }
     }
 }
