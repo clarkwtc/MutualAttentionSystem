@@ -5,10 +5,12 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import jakarta.inject.Inject;
+import org.app.domain.Relationship;
 import org.app.domain.User;
 import org.app.domain.exceptions.ExceptionMessage;
 import org.app.infrastructure.endpoints.dto.GetUserDTO;
 import org.app.infrastructure.endpoints.dto.RegisterUserDTO;
+import org.app.infrastructure.local.InMemoryRelationshipRepository;
 import org.app.infrastructure.local.InMemoryUserRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,7 +25,10 @@ import static io.restassured.RestAssured.given;
 @QuarkusTest
 class UserResourceTest {
     @Inject
-    InMemoryUserRepository repository;
+    InMemoryUserRepository userRepository;
+
+    @Inject
+    InMemoryRelationshipRepository relationshipRepository;
 
     List<User> users;
 
@@ -34,12 +39,12 @@ class UserResourceTest {
         users = new ArrayList<>();
         users.add(user1);
         users.add(user2);
-        users.forEach(repository::addUser);
+        users.forEach(userRepository::register);
     }
 
     @AfterEach
     void tearDown(){
-        repository.removeUsers(users);
+        userRepository.removeUsers(users);
         users.clear();
     }
 
@@ -156,9 +161,9 @@ class UserResourceTest {
 
         // Then
         response.then().statusCode(200);
-        Assertions.assertTrue(repository.findUser(user.getId()).get(0).isFollowing(following));
-        Assertions.assertTrue(repository.findUser(following.getId()).get(0).isFan(user));
-        Assertions.assertFalse(repository.findUser(user.getId()).get(0).isFriend(following));
+        List<Relationship> relationships = relationshipRepository.find(following.getId(), user.getId());
+        Assertions.assertEquals(1, relationships.size());
+        Assertions.assertFalse(relationships.get(0).isFriend());
     }
 
     @ParameterizedTest
@@ -205,7 +210,7 @@ class UserResourceTest {
         User user = users.get(0);
         User following = users.get(1);
         user.subscribe(following);
-        repository.updateUsers(List.of(user));
+        relationshipRepository.addAll(user.getRelationships());
 
         RequestSpecification requestSpecification = given()
                 .pathParam("id", user.getId().toString());
@@ -220,6 +225,7 @@ class UserResourceTest {
                 .extract().body()
                 .as(ArrayList.class);
 
+        Assertions.assertEquals(1, getFollowingsListDTOs.size());
         for (Object object: getFollowingsListDTOs) {
             Map<String, String> getFollowingsListDTO = (Map<String, String>) object;
             Assertions.assertEquals(getFollowingsListDTO.get("id"), following.getId().toString());
@@ -233,7 +239,9 @@ class UserResourceTest {
         User user = users.get(0);
         User following = users.get(1);
         user.subscribe(following);
-        repository.updateUsers(List.of(user, following));
+        relationshipRepository.addAll(user.getRelationships());
+        Assertions.assertEquals(1, relationshipRepository.findByUserId(user.getId()).size());
+        Assertions.assertEquals(1, relationshipRepository.findByUserId(following.getId()).size());
 
         Map<String, Object> body = new HashMap<>();
         body.put("followingId", following.getId());
@@ -250,9 +258,8 @@ class UserResourceTest {
 
         // Then
         response.then().statusCode(200);
-        Assertions.assertFalse(repository.findUser(user.getId()).get(0).isFollowing(following));
-        Assertions.assertFalse(repository.findUser(following.getId()).get(0).isFan(user));
-        Assertions.assertFalse(repository.findUser(user.getId()).get(0).isFriend(following));
+        Assertions.assertEquals(0, relationshipRepository.findByUserId(user.getId()).size());
+        Assertions.assertEquals(0, relationshipRepository.findByUserId(following.getId()).size());
     }
 
     @Test
@@ -285,7 +292,9 @@ class UserResourceTest {
         User user = users.get(0);
         User following = users.get(1);
         user.subscribe(following);
-        repository.updateUsers(List.of(user));
+        relationshipRepository.addAll(user.getRelationships());
+        Assertions.assertEquals(1, relationshipRepository.findByUserId(user.getId()).size());
+        Assertions.assertEquals(1, relationshipRepository.findByUserId(following.getId()).size());
 
         RequestSpecification requestSpecification = given()
                 .pathParam("id", following.getId().toString());
@@ -300,6 +309,7 @@ class UserResourceTest {
                 .extract().body()
                 .as(ArrayList.class);
 
+        Assertions.assertEquals(1, getFanListDTOs.size());
         for (Object object: getFanListDTOs) {
             Map<String, String> getFanListDTO = (Map<String, String>) object;
             Assertions.assertEquals(getFanListDTO.get("id"), user.getId().toString());
@@ -340,8 +350,7 @@ class UserResourceTest {
         // Then
         response.then().statusCode(200);
         followingResponse.then().statusCode(200);
-        Assertions.assertTrue(repository.findUser(user.getId()).get(0).isFriend(following));
-        Assertions.assertTrue(repository.findUser(following.getId()).get(0).isFriend(user));
+        Assertions.assertEquals(2, relationshipRepository.find(following.getId(), user.getId()).size());
     }
 
 
@@ -352,7 +361,8 @@ class UserResourceTest {
         User friend = users.get(1);
         user.subscribe(friend);
         friend.subscribe(user);
-        repository.updateUsers(List.of(user, friend));
+        relationshipRepository.addAll(user.getRelationships());
+        Assertions.assertEquals(2, relationshipRepository.find(friend.getId(), user.getId()).size());
 
         RequestSpecification requestSpecification = given()
                 .pathParam("id", user.getId().toString());
@@ -367,6 +377,7 @@ class UserResourceTest {
                 .extract().body()
                 .as(ArrayList.class);
 
+        Assertions.assertEquals(1, getFriendListDTOs.size());
         for (Object object: getFriendListDTOs) {
             Map<String, String> getFriendListDTO = (Map<String, String>) object;
             Assertions.assertEquals(getFriendListDTO.get("id"), friend.getId().toString());

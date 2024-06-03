@@ -24,9 +24,7 @@ public class UserResource {
     @Inject
     UnsubscribeUserCase unsubscribeUserCase;
     @Inject
-    GetFollowingListUserCase getFollowingListUserCase;
-    @Inject
-    GetFanListUserCase getFanListUserCase;
+    GetUserWithRelationshipUserCase getUserWithRelationshipUserCase;
 
     public static class registerUserBody {
         @NotBlank(message = "username is required")
@@ -79,7 +77,7 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/followings")
     public Response getFollowingList(@BeanParam UserPath path) {
-        User user = getFollowingListUserCase.execute(path.id);
+        User user = getUserWithRelationshipUserCase.execute(path.id);
         return Response.ok(GetFollowingListDTO.from(user)).build();
     }
 
@@ -97,7 +95,7 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/fans")
     public Response getFanList(@BeanParam UserPath path) {
-        User user = getFanListUserCase.execute(path.id);
+        User user = getUserWithRelationshipUserCase.execute(path.id);
         return Response.ok(GetFanListDTO.from(user)).build();
     }
 
@@ -106,7 +104,7 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/friends")
     public Response getFriendList(@BeanParam UserPath path) {
-        User user = getUserUserCase.execute(path.id);
+        User user = getUserWithRelationshipUserCase.execute(path.id);
         return Response.ok(GetFriendListDTO.from(user)).build();
     }
 }

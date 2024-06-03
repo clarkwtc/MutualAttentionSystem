@@ -1,14 +1,14 @@
 package org.app.domain;
 
+import org.app.infrastructure.local.UserData;
+
 import java.util.List;
 import java.util.UUID;
 
 public interface IUserRepository {
-    void registerUser(User user);
-
-    List<User> findUser(UUID userId);
-
-    List<User> findUserByUsername(String username);
-
-    void updateUsers(List<User> users);
+    void register(User user);
+    List<User> find(UUID userId);
+    List<User> find(List<UUID> userIds);
+    List<User> findByUsername(String username);
+    void update(List<User> users);
 }

@@ -9,7 +9,13 @@ import java.util.stream.Collectors;
 public class User {
     private final UUID id;
     private final String username;
-    private final List<Relationship> relationships;
+    private List<Relationship> relationships;
+
+    public User(UUID id,String username) {
+        this.id = id;
+        this.username = username;
+        this.relationships = new ArrayList<>();
+    }
 
     public User(String username){
         this.id = UUID.randomUUID();
@@ -25,24 +31,32 @@ public class User {
         return username;
     }
 
+    public void setRelationships(List<Relationship> relationships) {
+        this.relationships.addAll(relationships);
+    }
+
+    public List<Relationship> getRelationships() {
+        return relationships;
+    }
+
     public List<User> getFriends() {
-        return relationships.stream().filter(relationship -> relationship.isFriend() && relationship.getFan().equals(this)).map(Relationship::getFollowing).collect(Collectors.toList());
+        return relationships.stream().filter(relationship -> relationship.isFriend() && relationship.getFan().getId().equals(this.id)).map(Relationship::getFollowing).collect(Collectors.toList());
     }
 
     public List<User> getFollowings() {
-        return relationships.stream().filter(relationship -> relationship.getFan().equals(this)).map(Relationship::getFollowing).collect(Collectors.toList());
+        return relationships.stream().filter(relationship -> relationship.getFan().getId().equals(this.id)).map(Relationship::getFollowing).collect(Collectors.toList());
     }
 
     public List<User> getFans() {
-        return relationships.stream().filter(relationship -> relationship.getFollowing().equals(this)).map(Relationship::getFan).collect(Collectors.toList());
+        return relationships.stream().filter(relationship -> relationship.getFollowing().getId().equals(this.id)).map(Relationship::getFan).collect(Collectors.toList());
     }
 
     public boolean isFollowing(User following){
-        return this.relationships.stream().anyMatch(relationship -> relationship.getFollowing().equals(following) && relationship.getFan().equals(this));
+        return this.relationships.stream().anyMatch(relationship -> relationship.getFollowing().getId().equals(following.getId()) && relationship.getFan().getId().equals(this.id));
     }
 
     public boolean isFan(User fan){
-        return this.relationships.stream().anyMatch(relationship -> relationship.getFollowing().equals(this) && relationship.getFan().equals(fan));
+        return this.relationships.stream().anyMatch(relationship -> relationship.getFollowing().getId().equals(this.id) && relationship.getFan().getId().equals(fan.getId()));
     }
 
     public void subscribe(User user){
@@ -56,7 +70,7 @@ public class User {
     }
 
     public Optional<Relationship> getRelationship(User following, User fan){
-        return this.relationships.stream().filter(relationship -> relationship.getFollowing().equals(following) && relationship.getFan().equals(fan)).findFirst();
+        return this.relationships.stream().filter(relationship -> relationship.getFollowing().getId().equals(following.getId()) && relationship.getFan().getId().equals(fan.getId())).findFirst();
     }
 
     public void unsubscribe(User user){

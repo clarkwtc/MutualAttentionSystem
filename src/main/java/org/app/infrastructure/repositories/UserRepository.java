@@ -12,25 +12,30 @@ import java.util.UUID;
 @ApplicationScoped
 public class UserRepository implements IUserRepository {
     @Inject
-    InMemoryUserRepository inMemoryUserRepository;
+    InMemoryUserRepository userRepository;
 
     @Override
-    public void registerUser(User user) {
-        inMemoryUserRepository.addUser(user);
+    public void register(User user) {
+        userRepository.register(user);
     }
 
     @Override
-    public List<User> findUser(UUID userId) {
-        return inMemoryUserRepository.findUser(userId);
+    public List<User> find(UUID userId) {
+        return userRepository.find(userId);
     }
 
     @Override
-    public List<User> findUserByUsername(String username) {
-        return inMemoryUserRepository.findUserByUsername(username);
+    public List<User> find(List<UUID> userIds) {
+        return userRepository.find(userIds);
     }
 
     @Override
-    public void updateUsers(List<User> users) {
-        inMemoryUserRepository.updateUsers(users);
+    public List<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    @Override
+    public void update(List<User> users) {
+        userRepository.update(users);
     }
 }

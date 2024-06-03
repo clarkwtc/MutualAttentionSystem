@@ -15,7 +15,7 @@ public class GetUserUserCase {
     UserRepository userRepository;
 
     public User execute(String userId){
-        List<User> users = userRepository.findUser(UUID.fromString(userId));
+        List<User> users = userRepository.find(UUID.fromString(userId));
         MutualAttentionSystem system = new MutualAttentionSystem();
         system.setUsers(users);
         return system.getUser(userId);

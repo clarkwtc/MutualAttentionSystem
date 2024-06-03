@@ -1,14 +1,20 @@
 package org.app.domain;
 
 public class Relationship {
-    private final User following;
-    private final User fan;
+    private User following;
+    private User fan;
     private boolean isFriend;
 
     public Relationship(User following, User fan) {
         this.following = following;
         this.fan = fan;
         makeFriend();
+    }
+
+    public Relationship(User following, User fan, boolean isFriend) {
+        this.following = following;
+        this.fan = fan;
+        this.isFriend = isFriend;
     }
 
     public User getFollowing() {
@@ -21,6 +27,14 @@ public class Relationship {
 
     public boolean isFriend() {
         return isFriend;
+    }
+
+    public void setFollowing(User following) {
+        this.following = following;
+    }
+
+    public void setFan(User fan) {
+        this.fan = fan;
     }
 
     private void makeFriend(){
