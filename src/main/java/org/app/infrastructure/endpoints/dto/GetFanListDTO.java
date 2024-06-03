@@ -4,17 +4,16 @@ import org.app.domain.User;
 
 import java.util.List;
 
-public class GetFollowerListDTO {
+public class GetFanListDTO {
     public String id;
-    public String nickname;
     public String username;
 
-    public GetFollowerListDTO(User user) {
+    public GetFanListDTO(User user) {
         this.id = user.getId().toString();
         this.username = user.getUsername();
     }
 
-    public static List<GetFollowerListDTO> from(User user){
-        return user.getFans().stream().map(GetFollowerListDTO::new).toList();
+    public static List<GetFanListDTO> from(User user){
+        return user.getFans().stream().map(GetFanListDTO::new).toList();
     }
 }

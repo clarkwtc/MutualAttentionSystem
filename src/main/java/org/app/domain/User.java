@@ -26,7 +26,7 @@ public class User {
     }
 
     public List<User> getFriends() {
-        return relationships.stream().filter(Relationship::isFriend).map(Relationship::getFollowing).collect(Collectors.toList());
+        return relationships.stream().filter(relationship -> relationship.isFriend() && relationship.getFan().equals(this)).map(Relationship::getFollowing).collect(Collectors.toList());
     }
 
     public List<User> getFollowings() {
@@ -39,6 +39,10 @@ public class User {
 
     public boolean isFollowing(User following){
         return this.relationships.stream().anyMatch(relationship -> relationship.getFollowing().equals(following) && relationship.getFan().equals(this));
+    }
+
+    public boolean isFan(User fan){
+        return this.relationships.stream().anyMatch(relationship -> relationship.getFollowing().equals(this) && relationship.getFan().equals(fan));
     }
 
     public void subscribe(User user){
