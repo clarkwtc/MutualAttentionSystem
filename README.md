@@ -41,12 +41,3 @@ followingId | string
 fanId | string
 isFriend | boolean
 createdAt | date
-
-
-        public String username;
-    }
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response registerUser(@Valid UserResource.registerUserBody body) {
