@@ -4,7 +4,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.app.domain.IRelationshipRepository;
 import org.app.domain.Relationship;
-import org.app.infrastructure.local.InMemoryRelationshipRepository;
+import org.app.infrastructure.local.inmemory.InMemoryRelationshipRepository;
+import org.app.infrastructure.local.mongodb.MongoDBRelationshipRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,13 +35,9 @@ public class RelationshipRepository implements IRelationshipRepository {
         relationshipRepository.addAll(relationships);
     }
 
-    @Override
-    public void update(List<Relationship> relationships) {
-        relationshipRepository.update(relationships);
-    }
 
     @Override
-    public void remove(List<Relationship> relationships) {
-        relationshipRepository.remove(relationships);
+    public void removeAll(List<Relationship> relationships) {
+        relationshipRepository.removeAll(relationships);
     }
 }

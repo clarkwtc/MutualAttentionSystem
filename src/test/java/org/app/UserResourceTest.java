@@ -9,8 +9,8 @@ import org.app.domain.Relationship;
 import org.app.domain.User;
 import org.app.domain.exceptions.ExceptionMessage;
 import org.app.infrastructure.endpoints.dto.*;
-import org.app.infrastructure.local.InMemoryRelationshipRepository;
-import org.app.infrastructure.local.InMemoryUserRepository;
+import org.app.infrastructure.local.inmemory.InMemoryRelationshipRepository;
+import org.app.infrastructure.local.inmemory.InMemoryUserRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -43,7 +43,7 @@ class UserResourceTest {
 
     @AfterEach
     void tearDown(){
-        userRepository.removeUsers(users);
+        userRepository.removeAll(users);
         users.clear();
     }
 
@@ -237,9 +237,10 @@ class UserResourceTest {
         User user = users.get(0);
         User following = users.get(1);
         user.follow(following);
+        following.follow(user);
         relationshipRepository.addAll(user.getRelationships());
-        Assertions.assertEquals(1, relationshipRepository.findByUserId(user.getId()).size());
-        Assertions.assertEquals(1, relationshipRepository.findByUserId(following.getId()).size());
+        Assertions.assertEquals(2, relationshipRepository.findByUserId(user.getId()).size());
+        Assertions.assertEquals(2, relationshipRepository.findByUserId(following.getId()).size());
 
         Map<String, Object> body = new HashMap<>();
         body.put("followingId", following.getId());
@@ -256,8 +257,9 @@ class UserResourceTest {
 
         // Then
         response.then().statusCode(200);
-        Assertions.assertEquals(0, relationshipRepository.findByUserId(user.getId()).size());
-        Assertions.assertEquals(0, relationshipRepository.findByUserId(following.getId()).size());
+        Assertions.assertEquals(1, relationshipRepository.findByUserId(user.getId()).size());
+        Assertions.assertEquals(1, relationshipRepository.findByUserId(following.getId()).size());
+        Assertions.assertFalse(relationshipRepository.findByUserId(user.getId()).get(0).isFriend());
     }
 
     @Test

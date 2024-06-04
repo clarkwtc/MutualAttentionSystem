@@ -34,6 +34,7 @@ public class FollowUserCase {
         following.setRelationships(relationships);
 
         user.follow(following);
+        relationshipRepository.removeAll(user.getRelationships());
         relationshipRepository.addAll(user.getRelationships());
     }
 }

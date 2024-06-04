@@ -27,7 +27,6 @@ public class GetUserUserCase {
         List<Relationship> relationships = relationshipRepository.findByUserId(UUID.fromString(userId));
         setUserInfoInRelationship(userRepository.find(toUUIDList(relationships, userId)), relationships);
 
-
         system.setUsers(users);
         User user = system.getUser(userId);
         user.setRelationships(relationships);

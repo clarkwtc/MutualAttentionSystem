@@ -1,8 +1,9 @@
-package org.app.infrastructure.local;
+package org.app.infrastructure.local.inmemory;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.app.domain.IUserRepository;
 import org.app.domain.User;
+import org.app.infrastructure.local.UserData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,13 +50,13 @@ public class InMemoryUserRepository implements IUserRepository {
         return userData.stream().map(UserData::toDomain).collect(Collectors.toList());
     }
 
-    @Override
+
     public void update(List<User> users) {
         List<UserData> userData = users.stream().map(UserData::toData).collect(Collectors.toList());
         this.users = this.users.stream().map(user -> filterUserId(userData, user.getId()).findFirst().orElse(user)).collect(Collectors.toList());
     }
 
-    public void removeUsers(List<User> users) {
+    public void removeAll(List<User> users) {
         List<UserData> userData = users.stream().map(UserData::toData).collect(Collectors.toList());
         this.users = this.users.stream().filter(user -> filterUserId(userData, user.getId()).findFirst().isEmpty()).collect(Collectors.toList());
     }

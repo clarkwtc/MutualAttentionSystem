@@ -5,7 +5,7 @@ import org.app.domain.User;
 import java.util.Date;
 import java.util.UUID;
 
-public class UserData {
+public class UserData{
     private final String id;
     private final String username;
     private final Date createdAt;

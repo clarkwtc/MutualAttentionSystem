@@ -8,6 +8,5 @@ public interface IRelationshipRepository {
     List<Relationship> findByFollowingId(UUID followingId, UUID fanId);
     List<Relationship> findByUserId(UUID userId);
     void addAll(List<Relationship> relationships);
-    void update(List<Relationship> relationships);
-    void remove(List<Relationship> relationships);
+    void removeAll(List<Relationship> relationships);
 }

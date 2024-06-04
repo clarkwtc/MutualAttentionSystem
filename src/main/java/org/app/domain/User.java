@@ -9,11 +9,17 @@ import java.util.stream.Collectors;
 public class User {
     private final UUID id;
     private final String username;
-    private List<Relationship> relationships;
+    private final List<Relationship> relationships;
 
-    public User(UUID id,String username) {
+    public User(UUID id, String username) {
         this.id = id;
         this.username = username;
+        this.relationships = new ArrayList<>();
+    }
+
+    public User(UUID id) {
+        this.id = id;
+        this.username = null;
         this.relationships = new ArrayList<>();
     }
 

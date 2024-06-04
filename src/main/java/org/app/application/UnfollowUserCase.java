@@ -29,11 +29,12 @@ public class UnfollowUserCase {
 
         User user = system.getUser(userId);
         User following = system.getUser(followingId);
-        List<Relationship> relationships = relationshipRepository.findByFollowingId(UUID.fromString(followingId), UUID.fromString(userId));
+        List<Relationship> relationships = relationshipRepository.find(UUID.fromString(followingId), UUID.fromString(userId));
         user.setRelationships(relationships);
         following.setRelationships(relationships);
         user.unfollow(following);
 
-        relationshipRepository.remove(relationships);
+        relationshipRepository.removeAll(relationships);
+        relationshipRepository.addAll(user.getRelationships());
     }
 }

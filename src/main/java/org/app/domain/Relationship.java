@@ -1,20 +1,29 @@
 package org.app.domain;
 
+import java.util.UUID;
+
 public class Relationship {
+    private final UUID id;
     private User following;
     private User fan;
     private boolean isFriend;
 
     public Relationship(User following, User fan) {
+        this.id = UUID.randomUUID();
         this.following = following;
         this.fan = fan;
         makeFriend();
     }
 
     public Relationship(User following, User fan, boolean isFriend) {
+        this.id = UUID.randomUUID();
         this.following = following;
         this.fan = fan;
         this.isFriend = isFriend;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public User getFollowing() {

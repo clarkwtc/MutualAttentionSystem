@@ -1,8 +1,9 @@
-package org.app.infrastructure.local;
+package org.app.infrastructure.local.inmemory;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.app.domain.IRelationshipRepository;
 import org.app.domain.Relationship;
+import org.app.infrastructure.local.RelationshipData;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,11 +55,7 @@ public class InMemoryRelationshipRepository implements IRelationshipRepository {
     @Override
     public void addAll(List<Relationship> relationships) {
         List<RelationshipData> relationshipsData = toRelationshipsData(relationships);
-        List<RelationshipData> delRelationships = this.relationships.stream()
-                .filter(relationshipData -> relationshipsData
-                        .stream().anyMatch(relationship -> matchRelationship(relationship, relationshipData.getFollowingId(), relationshipData.getFanId())))
-                .collect(Collectors.toList());
-        this.relationships.removeAll(delRelationships);
+
         this.relationships.addAll(relationshipsData);
     }
 
@@ -66,13 +63,18 @@ public class InMemoryRelationshipRepository implements IRelationshipRepository {
         return relationshipsData.stream().filter(relationship -> matchRelationship(relationship, targetRelationship.getFollowingId(), targetRelationship.getFanId())).findFirst();
     }
 
-    @Override
+
     public void update(List<Relationship> relationships) {
         this.relationships = this.relationships.stream().map(relationship -> getRelationship(toRelationshipsData(relationships), relationship).orElse(relationship)).collect(Collectors.toList());
     }
 
     @Override
-    public void remove(List<Relationship> relationships) {
-        this.relationships = this.relationships.stream().filter(relationship -> getRelationship(toRelationshipsData(relationships), relationship).isEmpty()).collect(Collectors.toList());
+    public void removeAll(List<Relationship> relationships) {
+        List<RelationshipData> relationshipsData = toRelationshipsData(relationships);
+        List<RelationshipData> delRelationships = this.relationships.stream()
+                .filter(relationshipData -> relationshipsData
+                        .stream().anyMatch(relationship -> matchRelationship(relationship, relationshipData.getFollowingId(), relationshipData.getFanId())))
+                .collect(Collectors.toList());
+        this.relationships.removeAll(delRelationships);
     }
 }
