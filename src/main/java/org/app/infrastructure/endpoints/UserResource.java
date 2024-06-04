@@ -30,9 +30,9 @@ public class UserResource {
     @Inject
     GetUserUserCase getUserUserCase;
     @Inject
-    SubscribeUserCase subscribeUserCase;
+    FollowUserCase followUserCase;
     @Inject
-    UnsubscribeUserCase unsubscribeUserCase;
+    UnfollowUserCase unfollowUserCase;
     @Inject
     GetFollowingsUserCase getFollowingsUserCase;
     @Inject
@@ -86,10 +86,10 @@ public class UserResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/subscribe")
-    public Response subscribe(@BeanParam UserPath path, @Valid FollowingBody body) {
+    @Path("/{id}/follow")
+    public Response follow(@BeanParam UserPath path, @Valid FollowingBody body) {
         Supplier<Response> responseSupplier = () -> {
-            subscribeUserCase.execute(path.id, body.followingId);
+            followUserCase.execute(path.id, body.followingId);
             return Response.ok().build();
         };
         return RetryUtil.retry(responseSupplier, 3, 500);
@@ -110,10 +110,10 @@ public class UserResource {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/unsubscribe")
-    public Response unsubscribe(@BeanParam UserPath path, @Valid FollowingBody body) {
+    @Path("/{id}/unfollow")
+    public Response unfollow(@BeanParam UserPath path, @Valid FollowingBody body) {
         Supplier<Response> responseSupplier = () -> {
-            unsubscribeUserCase.execute(path.id, body.followingId);
+            unfollowUserCase.execute(path.id, body.followingId);
             return Response.ok().build();
         };
         return RetryUtil.retry(responseSupplier, 3, 500);

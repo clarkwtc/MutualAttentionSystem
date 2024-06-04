@@ -21,14 +21,14 @@ public class UserTestCase {
     }
 
     @Test
-    void subscribe() {
+    void follow() {
         // Given
         List<User> users = system.getUsers();
         User user = users.get(0);
         User user1 = users.get(1);
 
         // When
-        user.subscribe(user1);
+        user.follow(user1);
 
         // Then
         Assertions.assertEquals(1, user.getFollowings().size());
@@ -47,8 +47,8 @@ public class UserTestCase {
         User user1 = users.get(1);
 
         // When
-        user.subscribe(user1);
-        user1.subscribe(user);
+        user.follow(user1);
+        user1.follow(user);
 
         // Then
         Assertions.assertEquals(1, user.getFollowings().size());
@@ -60,15 +60,15 @@ public class UserTestCase {
     }
 
     @Test
-    void unsubscribe() {
+    void unfollow() {
         // Given
         List<User> users = system.getUsers();
         User user = users.get(0);
         User user1 = users.get(1);
-        user.subscribe(user1);
+        user.follow(user1);
 
         // When
-        user.unsubscribe(user1);
+        user.unfollow(user1);
 
         // Then
         Assertions.assertEquals(0, user.getFollowings().size());
@@ -85,11 +85,11 @@ public class UserTestCase {
         List<User> users = system.getUsers();
         User user = users.get(0);
         User user1 = users.get(1);
-        user.subscribe(user1);
-        user1.subscribe(user);
+        user.follow(user1);
+        user1.follow(user);
 
         // When
-        user.unsubscribe(user1);
+        user.unfollow(user1);
 
         // Then
         Assertions.assertEquals(0, user.getFollowings().size());

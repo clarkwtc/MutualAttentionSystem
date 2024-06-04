@@ -141,7 +141,7 @@ class UserResourceTest {
     }
 
     @Test
-    void subscribe() {
+    void follow() {
         // Given
         User user = users.get(0);
         User following = users.get(1);
@@ -156,7 +156,7 @@ class UserResourceTest {
         // When
         Response response = requestSpecification
                 .when()
-                .post("/users/{id}/subscribe");
+                .post("/users/{id}/follow");
 
         // Then
         response.then().statusCode(200);
@@ -167,7 +167,7 @@ class UserResourceTest {
 
     @ParameterizedTest
     @MethodSource()
-    void subscribeNotExistUserFail(boolean isUser) {
+    void followNotExistUserFail(boolean isUser) {
         // Given
         UUID followingId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -186,7 +186,7 @@ class UserResourceTest {
         // When
         Response response = requestSpecification
                 .when()
-                .post("/users/{id}/subscribe");
+                .post("/users/{id}/follow");
 
         // Then
         String message = response.then().statusCode(404)
@@ -196,7 +196,7 @@ class UserResourceTest {
         Assertions.assertEquals(ExceptionMessage.NOT_EXIST_USER, message);
     }
 
-    private static Stream<Arguments> subscribeNotExistUserFail(){
+    private static Stream<Arguments> followNotExistUserFail(){
         return Stream.of(
                 Arguments.of(true),
                 Arguments.of(false )
@@ -208,7 +208,7 @@ class UserResourceTest {
         // Given
         User user = users.get(0);
         User following = users.get(1);
-        user.subscribe(following);
+        user.follow(following);
         relationshipRepository.addAll(user.getRelationships());
 
         RequestSpecification requestSpecification = given()
@@ -232,11 +232,11 @@ class UserResourceTest {
     }
 
     @Test
-    void unsubscribe() {
+    void unfollow() {
         // Given
         User user = users.get(0);
         User following = users.get(1);
-        user.subscribe(following);
+        user.follow(following);
         relationshipRepository.addAll(user.getRelationships());
         Assertions.assertEquals(1, relationshipRepository.findByUserId(user.getId()).size());
         Assertions.assertEquals(1, relationshipRepository.findByUserId(following.getId()).size());
@@ -252,7 +252,7 @@ class UserResourceTest {
         // When
         Response response = requestSpecification
                 .when()
-                .delete("/users/{id}/unsubscribe");
+                .delete("/users/{id}/unfollow");
 
         // Then
         response.then().statusCode(200);
@@ -261,7 +261,7 @@ class UserResourceTest {
     }
 
     @Test
-    void unsubscribeNotUserFail() {
+    void unfollowNotUserFail() {
         // Given
         UUID userId = UUID.randomUUID();
         UUID followingId = users.get(0).getId();
@@ -277,7 +277,7 @@ class UserResourceTest {
         // When
         Response response = requestSpecification
                 .when()
-                .delete("/users/{id}/unsubscribe");
+                .delete("/users/{id}/unfollow");
 
         // Then
         String message = response.then().statusCode(404).extract().asPrettyString();
@@ -289,7 +289,7 @@ class UserResourceTest {
         // Given
         User user = users.get(0);
         User following = users.get(1);
-        user.subscribe(following);
+        user.follow(following);
         relationshipRepository.addAll(user.getRelationships());
         Assertions.assertEquals(1, relationshipRepository.findByUserId(user.getId()).size());
         Assertions.assertEquals(1, relationshipRepository.findByUserId(following.getId()).size());
@@ -329,7 +329,7 @@ class UserResourceTest {
 
         Response response = requestSpecification
                 .when()
-                .post("/users/{id}/subscribe");
+                .post("/users/{id}/follow");
 
         body = new HashMap<>();
         body.put("followingId", user.getId());
@@ -342,7 +342,7 @@ class UserResourceTest {
         // When
         Response followingResponse = followingRequestSpecification
                 .when()
-                .post("/users/{id}/subscribe");
+                .post("/users/{id}/follow");
 
         // Then
         response.then().statusCode(200);
@@ -356,8 +356,8 @@ class UserResourceTest {
         // Given
         User user = users.get(0);
         User friend = users.get(1);
-        user.subscribe(friend);
-        friend.subscribe(user);
+        user.follow(friend);
+        friend.follow(user);
         relationshipRepository.addAll(user.getRelationships());
         Assertions.assertEquals(2, relationshipRepository.find(friend.getId(), user.getId()).size());
 

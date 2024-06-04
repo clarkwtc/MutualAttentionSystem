@@ -59,7 +59,7 @@ public class User {
         return this.relationships.stream().anyMatch(relationship -> relationship.getFollowing().getId().equals(this.id) && relationship.getFan().getId().equals(fan.getId()));
     }
 
-    public void subscribe(User user){
+    public void follow(User user){
         if (!user.equals(this) && isFollowing(user)){
             return;
         }
@@ -73,7 +73,7 @@ public class User {
         return this.relationships.stream().filter(relationship -> relationship.getFollowing().getId().equals(following.getId()) && relationship.getFan().getId().equals(fan.getId())).findFirst();
     }
 
-    public void unsubscribe(User user){
+    public void unfollow(User user){
         if (!user.equals(this) && !isFollowing(user)){
             return;
         }
