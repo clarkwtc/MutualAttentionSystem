@@ -18,6 +18,10 @@ You can run your application in dev mode that enables live coding using:
 ./mvnw compile quarkus:dev
 ```
 
+## Displaying API ui in swagger
+
+You can click swagger url when your application is running: http://localhost:8080/q/swagger-ui/#/
+
 ## System designing diagram
 ![alt text](images/MututalAttentionSystemDesign.png)
 
@@ -37,3 +41,12 @@ followingId | string
 fanId | string
 isFriend | boolean
 createdAt | date
+
+
+        public String username;
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response registerUser(@Valid UserResource.registerUserBody body) {
