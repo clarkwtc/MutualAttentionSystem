@@ -15,7 +15,6 @@ public class RegisterUserUserCase {
 
     public User execute(String username){
         List<User> users = userRepository.findByUsername(username);
-
         MutualAttentionSystem system = new MutualAttentionSystem();
         system.setUsers(users);
         system.addUser(username);

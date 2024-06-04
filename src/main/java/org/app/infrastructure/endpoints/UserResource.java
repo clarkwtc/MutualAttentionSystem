@@ -15,8 +15,11 @@ import org.app.domain.events.FanEvent;
 import org.app.domain.events.FollowingEvent;
 import org.app.domain.events.FriendEvent;
 import org.app.infrastructure.endpoints.dto.*;
+import org.app.infrastructure.utils.RetryUtil;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
+
+import java.util.function.Supplier;
 
 @Path("/users")
 public class UserResource {
@@ -44,8 +47,11 @@ public class UserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response registerUser(@Valid UserResource.registerUserBody body) {
-        User user = registerUserUserCase.execute(body.username);
-        return Response.ok(RegisterUserDTO.from(user)).status(Response.Status.CREATED).build();
+        Supplier<Response> responseSupplier = () -> {
+            User user = registerUserUserCase.execute(body.username);
+            return Response.ok(RegisterUserDTO.from(user)).status(Response.Status.CREATED).build();
+        };
+        return RetryUtil.retry(responseSupplier, 3, 500);
     }
 
     public static class UserQuery {
@@ -77,8 +83,11 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/subscribe")
     public Response subscribe(@BeanParam UserPath path, @Valid FollowingBody body) {
-        subscribeUserCase.execute(path.id, body.followingId);
-        return Response.ok().build();
+        Supplier<Response> responseSupplier = () -> {
+            subscribeUserCase.execute(path.id, body.followingId);
+            return Response.ok().build();
+        };
+        return RetryUtil.retry(responseSupplier, 3, 500);
     }
 
     @GET
@@ -95,8 +104,11 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/unsubscribe")
     public Response unsubscribe(@BeanParam UserPath path, @Valid FollowingBody body) {
-        unsubscribeUserCase.execute(path.id, body.followingId);
-        return Response.ok().build();
+        Supplier<Response> responseSupplier = () -> {
+            unsubscribeUserCase.execute(path.id, body.followingId);
+            return Response.ok().build();
+        };
+        return RetryUtil.retry(responseSupplier, 3, 500);
     }
 
     public static class PageBody {

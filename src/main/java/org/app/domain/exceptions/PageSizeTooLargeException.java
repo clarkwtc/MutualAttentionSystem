@@ -1,6 +1,6 @@
 package org.app.domain.exceptions;
 
-public class PageSizeTooLargeException extends RuntimeException{
+public class PageSizeTooLargeException extends CustomException{
     public PageSizeTooLargeException() {
     }
 

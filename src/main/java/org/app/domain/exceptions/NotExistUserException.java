@@ -1,6 +1,6 @@
 package org.app.domain.exceptions;
 
-public class NotExistUserException extends RuntimeException{
+public class NotExistUserException extends CustomException{
     public NotExistUserException() {
     }
 

@@ -1,6 +1,6 @@
 package org.app.domain.exceptions;
 
-public class DuplicatedUserException extends RuntimeException{
+public class DuplicatedUserException extends CustomException{
     public DuplicatedUserException() {
     }
 
