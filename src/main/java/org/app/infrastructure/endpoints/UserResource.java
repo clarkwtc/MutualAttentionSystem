@@ -15,6 +15,7 @@ import org.app.domain.events.FanEvent;
 import org.app.domain.events.FollowingEvent;
 import org.app.domain.events.FriendEvent;
 import org.app.infrastructure.endpoints.dto.*;
+import org.app.infrastructure.utils.RateLimiter;
 import org.app.infrastructure.utils.RetryUtil;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
@@ -23,6 +24,7 @@ import java.util.function.Supplier;
 
 @Path("/users")
 public class UserResource {
+    private static final RateLimiter rateLimiter = new RateLimiter(5000, 1000, 1);
     @Inject
     RegisterUserUserCase registerUserUserCase;
     @Inject
@@ -64,8 +66,11 @@ public class UserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUser(@BeanParam @Valid UserQuery params) {
-        User user = getUserUserCase.execute(params.id);
-        return Response.ok(GetUserDTO.from(user)).build();
+        Supplier<Response> responseSupplier = () -> {
+            User user = getUserUserCase.execute(params.id);
+            return Response.ok(GetUserDTO.from(user)).build();
+        };
+        return rateLimiter.execute(responseSupplier);
     }
 
     public static class UserPath {
@@ -95,8 +100,11 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/followings")
     public Response getFollowingList(@BeanParam UserPath path, @Valid PageBody body) {
-        FollowingEvent event = getFollowingsUserCase.execute(path.id, body.page, body.limit);
-        return Response.ok(GetFollowingListDTO.from(event)).build();
+        Supplier<Response> responseSupplier = () -> {
+            FollowingEvent event = getFollowingsUserCase.execute(path.id, body.page, body.limit);
+            return Response.ok(GetFollowingListDTO.from(event)).build();
+        };
+        return rateLimiter.execute(responseSupplier);
     }
 
     @DELETE
@@ -128,8 +136,11 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/fans")
     public Response getFanList(@BeanParam UserPath path, @Valid PageBody body) {
-        FanEvent event = getFansUserCase.execute(path.id, body.page, body.limit);
-        return Response.ok(GetFanListDTO.from(event)).build();
+        Supplier<Response> responseSupplier = () -> {
+            FanEvent event = getFansUserCase.execute(path.id, body.page, body.limit);
+            return Response.ok(GetFanListDTO.from(event)).build();
+        };
+        return rateLimiter.execute(responseSupplier);
     }
 
     @GET
@@ -137,7 +148,10 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/friends")
     public Response getFriendList(@BeanParam UserPath path, @Valid PageBody body) {
-        FriendEvent event = getFriendsUserCase.execute(path.id, body.page, body.limit);
-        return Response.ok(GetFriendListDTO.from(event)).build();
+        Supplier<Response> responseSupplier = () -> {
+            FriendEvent event = getFriendsUserCase.execute(path.id, body.page, body.limit);
+            return Response.ok(GetFriendListDTO.from(event)).build();
+        };
+        return rateLimiter.execute(responseSupplier);
     }
 }
