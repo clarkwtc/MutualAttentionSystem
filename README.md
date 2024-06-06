@@ -1,4 +1,6 @@
-# Getting-started
+# MutualAttentionSystem
+
+This system manages users and follows other users, if two users follow each other, they become friends.
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
