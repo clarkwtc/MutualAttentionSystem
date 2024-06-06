@@ -1,9 +1,8 @@
-package org.app.infrastructure.local.inmemory;
+package org.app.infrastructure.local;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.app.domain.IRelationshipRepository;
 import org.app.domain.Relationship;
-import org.app.infrastructure.local.RelationshipData;
 
 import java.util.*;
 import java.util.stream.Collectors;

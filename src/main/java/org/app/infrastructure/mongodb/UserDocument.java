@@ -1,4 +1,4 @@
-package org.app.infrastructure.local.mongodb;
+package org.app.infrastructure.mongodb;
 
 import org.app.domain.User;
 import org.bson.Document;

@@ -1,9 +1,8 @@
-package org.app.infrastructure.local.inmemory;
+package org.app.infrastructure.local;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.app.domain.IUserRepository;
 import org.app.domain.User;
-import org.app.infrastructure.local.UserData;
 
 import java.util.ArrayList;
 import java.util.List;

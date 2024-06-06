@@ -4,8 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.app.domain.User;
 import org.app.domain.IUserRepository;
-import org.app.infrastructure.local.inmemory.InMemoryUserRepository;
-import org.app.infrastructure.local.mongodb.MongoDBUserRepository;
+import org.app.infrastructure.local.InMemoryUserRepository;
 
 import java.util.List;
 import java.util.UUID;

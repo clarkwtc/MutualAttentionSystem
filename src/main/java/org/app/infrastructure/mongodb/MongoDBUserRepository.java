@@ -1,4 +1,4 @@
-package org.app.infrastructure.local.mongodb;
+package org.app.infrastructure.mongodb;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
