@@ -12,11 +12,11 @@ type UserData struct {
     CreatedAt time.Time
 }
 
-func toDomain(userData *UserData) *domain.User {
+func toUserDomain(userData *UserData) *domain.User {
     var relationship []*domain.Relationship
     return &domain.User{ID: uuid.MustParse(userData.ID), Username: userData.Username, Relationships: relationship}
 }
 
-func toData(user *domain.User) *UserData {
+func toUserData(user *domain.User) *UserData {
     return &UserData{ID: user.ID.String(), Username: user.Username, CreatedAt: time.Now()}
 }

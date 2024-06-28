@@ -1,7 +1,9 @@
-package server
+package main
+
+import "mutualAttentionSystem/app/main/infrastructure/endpoints"
 
 func main() {
-    route := SetupRouter()
+    route := endpoints.SetupRouter()
     err := route.Run(":8080")
     if err != nil {
         return

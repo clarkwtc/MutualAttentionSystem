@@ -47,6 +47,16 @@ func (selfUser *User) UnFollow(user *User) {
     selfUserRelationship.UnFriend()
 }
 
+func (selfUser *User) GetFriends() []*User {
+    var friends []*User
+    for _, relationship := range selfUser.Relationships {
+        if relationship.Fan.ID == selfUser.ID && relationship.IsFriend {
+            friends = append(friends, relationship.Following)
+        }
+    }
+    return friends
+}
+
 func (selfUser *User) GetFollowings() []*User {
     var followings []*User
     for _, relationship := range selfUser.Relationships {

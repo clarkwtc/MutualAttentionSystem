@@ -1,19 +1,21 @@
-package server
+package endpoints
 
 import (
     "github.com/gin-gonic/gin"
-    "mutualAttentionSystem/app/main/infrastructure/endpoints"
+    "mutualAttentionSystem/app/main/infrastructure/repositories"
 )
 
 func SetupRouter() *gin.Engine {
     r := gin.Default()
 
-    userEndpoints := endpoints.NewUserResource()
+    userRepository := repositories.NewUserRepository()
+    relationshipRepository := repositories.NewRelationshipRepository()
+    userEndpoints := NewUserResource(userRepository, relationshipRepository)
 
     userRoutes := r.Group("/users")
     {
         userRoutes.POST("", userEndpoints.RegisterUser)
-        userRoutes.GET("/")
+        userRoutes.GET("", userEndpoints.GetUser)
         userRoutes.POST("/:id/follow")
         userRoutes.GET("/:id/followings")
         userRoutes.DELETE("/:id/unfollow")

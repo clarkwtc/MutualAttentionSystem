@@ -6,7 +6,7 @@ import (
 )
 
 type RegisterUserUseCase struct {
-    repository domain.IUserRepository
+    UserRepository domain.IUserRepository
 }
 
 func NewRegisterUserUseCase() *RegisterUserUseCase {
@@ -14,7 +14,7 @@ func NewRegisterUserUseCase() *RegisterUserUseCase {
 }
 
 func (usecase *RegisterUserUseCase) Execute(username string) *domain.User {
-    user := usecase.repository.FindByUsername(username)
+    user := usecase.UserRepository.FindByUsername(username)
 
     if user != nil {
         return user
@@ -24,6 +24,6 @@ func (usecase *RegisterUserUseCase) Execute(username string) *domain.User {
     system.AddUser(username)
     user = system.Users[0]
 
-    usecase.repository.Register(user)
+    usecase.UserRepository.Register(user)
     return user
 }
