@@ -8,8 +8,9 @@ type User struct {
     Relationships []*Relationship
 }
 
-func NewUser() *User {
-    return &User{}
+func NewUser(username string) *User {
+    var relationship []*Relationship
+    return &User{uuid.New(), username, relationship}
 }
 
 func (selfUser *User) Follow(user *User) {

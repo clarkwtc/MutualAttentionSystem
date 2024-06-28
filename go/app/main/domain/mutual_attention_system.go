@@ -1,23 +1,23 @@
 package domain
 
 type MututalAttentionSystem struct {
-    Users []User
+    Users []*User
 }
 
 func NewMutualAttentionSysyem() *MututalAttentionSystem {
-    return &MututalAttentionSystem{[]User{}}
+    return &MututalAttentionSystem{}
 }
 
-func (system *MututalAttentionSystem) AddUser(user User) {
+func (system *MututalAttentionSystem) AddUser(username string) {
     for _, _user := range system.Users {
-        if _user.Username == user.Username {
+        if _user.Username == username {
             return
         }
     }
-    system.Users = append(system.Users, user)
+    system.Users = append(system.Users, NewUser(username))
 }
 
-func existUser(users []User, targetUser User) bool {
+func existUser(users []*User, targetUser *User) bool {
     for _, user := range users {
         if user.ID == targetUser.ID {
             return true
@@ -26,8 +26,8 @@ func existUser(users []User, targetUser User) bool {
     return false
 }
 
-func (system *MututalAttentionSystem) AddUserAll(users []User) {
-    var newUser []User
+func (system *MututalAttentionSystem) AddUserAll(users []*User) {
+    var newUser []*User
 
     for _, user := range users {
         if !existUser(system.Users, user) {
@@ -38,7 +38,7 @@ func (system *MututalAttentionSystem) AddUserAll(users []User) {
     system.Users = append(system.Users, newUser...)
 }
 
-func (system *MututalAttentionSystem) GetUser(userId string) User {
+func (system *MututalAttentionSystem) GetUser(userId string) *User {
     for _, user := range system.Users {
         if user.ID.String() == userId {
             return user

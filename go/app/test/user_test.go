@@ -1,7 +1,6 @@
 package test
 
 import (
-    "github.com/google/uuid"
     "github.com/stretchr/testify/assert"
     "mutualAttentionSystem/app/main/domain"
     "testing"
@@ -9,10 +8,8 @@ import (
 
 func initSystem() *domain.MututalAttentionSystem {
     system := domain.NewMutualAttentionSysyem()
-    var relationships []*domain.Relationship
-    var relationships1 []*domain.Relationship
-    system.AddUser(domain.User{ID: uuid.New(), Username: "sk22", Relationships: relationships})
-    system.AddUser(domain.User{ID: uuid.New(), Username: "pk67", Relationships: relationships1})
+    system.AddUser("sk22")
+    system.AddUser("pk67")
     return system
 }
 
@@ -20,8 +17,8 @@ func TestFollow(t *testing.T) {
     // Given
     system := initSystem()
     users := system.Users
-    user := &users[0]
-    user1 := &users[1]
+    user := users[0]
+    user1 := users[1]
 
     // When
     user.Follow(user1)
@@ -39,8 +36,8 @@ func TestMakeFriend(t *testing.T) {
     // Given
     system := initSystem()
     users := system.Users
-    user := &users[0]
-    user1 := &users[1]
+    user := users[0]
+    user1 := users[1]
 
     // When
     user.Follow(user1)
@@ -59,8 +56,8 @@ func TestUnFollow(t *testing.T) {
     // Given
     system := initSystem()
     users := system.Users
-    user := &users[0]
-    user1 := &users[1]
+    user := users[0]
+    user1 := users[1]
     user.Follow(user1)
 
     // When
@@ -79,8 +76,8 @@ func TestUnFriend(t *testing.T) {
     // Given
     system := initSystem()
     users := system.Users
-    user := &users[0]
-    user1 := &users[1]
+    user := users[0]
+    user1 := users[1]
     user.Follow(user1)
     user1.Follow(user)
 
