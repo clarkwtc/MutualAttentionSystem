@@ -2,15 +2,10 @@ package application
 
 import (
     "mutualAttentionSystem/app/main/domain"
-    "mutualAttentionSystem/app/main/infrastructure/repositories"
 )
 
 type RegisterUserUseCase struct {
     UserRepository domain.IUserRepository
-}
-
-func NewRegisterUserUseCase() *RegisterUserUseCase {
-    return &RegisterUserUseCase{repositories.NewUserRepository()}
 }
 
 func (usecase *RegisterUserUseCase) Execute(username string) *domain.User {

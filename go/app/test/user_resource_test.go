@@ -18,18 +18,19 @@ import (
 
 var router *gin.Engine = nil
 var system = domain.NewMutualAttentionSysyem()
+var userRepository = repositories.NewUserRepository()
+var relationshipRepository = repositories.NewRelationshipRepository()
 
 func init() {
     system.AddUser("sk22")
     system.AddUser("cp200")
 
-    userRepository := repositories.NewUserRepository()
     for _, user := range system.Users {
         userRepository.Register(user)
     }
 
     mockRouter := mock.Router{UserRepository: userRepository,
-        RelationshipRepository: repositories.NewRelationshipRepository()}
+        RelationshipRepository: relationshipRepository}
 
     router = mockRouter.SetupRouter()
 }
@@ -75,4 +76,24 @@ func TestGetUser(t *testing.T) {
     assert.Equal(t, 0, getUserDTO.Followings)
     assert.Equal(t, 0, getUserDTO.Friends)
     assert.Equal(t, 0, getUserDTO.Fans)
+}
+
+func TestFollowUser(t *testing.T) {
+    // Given
+    user := system.Users[0]
+    following := system.Users[1]
+
+    // When
+    body, _ := json.Marshal(endpoints.FollowBody{FollowingId: following.ID.String()})
+
+    uri := fmt.Sprintf("/users/%s/follow", user.ID.String())
+    request := httptest.NewRequest("POST", uri, strings.NewReader(string(body)))
+    response := httptest.NewRecorder()
+    router.ServeHTTP(response, request)
+
+    // Then
+    relationships := relationshipRepository.Find(following.ID, user.ID)
+    assert.Equal(t, 200, response.Code)
+    assert.Equal(t, 1, len(relationships))
+    assert.Equal(t, false, relationships[0].IsFriend)
 }

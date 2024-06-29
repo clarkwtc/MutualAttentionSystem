@@ -3,17 +3,11 @@ package application
 import (
     "github.com/google/uuid"
     "mutualAttentionSystem/app/main/domain"
-    "mutualAttentionSystem/app/main/infrastructure/repositories"
 )
 
 type GetUserUseCase struct {
     UserRepository         domain.IUserRepository
     RelationshipRepository domain.IRelationshipRepository
-}
-
-func NewGetUserUseCase() *GetUserUseCase {
-    return &GetUserUseCase{repositories.NewUserRepository(),
-        repositories.NewRelationshipRepository()}
 }
 
 func (usecase *GetUserUseCase) Execute(id string) *domain.User {
@@ -35,7 +29,7 @@ func (usecase *GetUserUseCase) Execute(id string) *domain.User {
 }
 
 func getUsersIdByRelationships(relationships []*domain.Relationship, userId uuid.UUID) []uuid.UUID {
-    var userIdsMap map[uuid.UUID]bool
+    userIdsMap := make(map[uuid.UUID]bool)
 
     for _, relationship := range relationships {
         followingId := relationship.Following.ID
