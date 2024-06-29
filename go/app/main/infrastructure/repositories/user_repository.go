@@ -26,6 +26,6 @@ func (repository *UserRepository) FindByUsername(username string) *domain.User {
     return repository.access.FindByUsername(username)
 }
 
-func (repository *UserRepository) Register(user *domain.User) {
-    repository.access.Register(user)
+func (repository *UserRepository) Save(user *domain.User) {
+    repository.access.Save(user)
 }

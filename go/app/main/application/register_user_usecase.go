@@ -19,6 +19,6 @@ func (usecase *RegisterUserUseCase) Execute(username string) *domain.User {
     system.AddUser(username)
     user = system.Users[0]
 
-    usecase.UserRepository.Register(user)
+    usecase.UserRepository.Save(user)
     return user
 }

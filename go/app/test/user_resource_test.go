@@ -26,7 +26,7 @@ func init() {
     system.AddUser("cp200")
 
     for _, user := range system.Users {
-        userRepository.Register(user)
+        userRepository.Save(user)
     }
 
     mockRouter := mock.Router{UserRepository: userRepository,
@@ -96,4 +96,31 @@ func TestFollowUser(t *testing.T) {
     assert.Equal(t, 200, response.Code)
     assert.Equal(t, 1, len(relationships))
     assert.Equal(t, false, relationships[0].IsFriend)
+}
+
+func TestUnFollowUser(t *testing.T) {
+    // Given
+    user := system.Users[0]
+    following := system.Users[1]
+    user.Follow(following)
+    following.Follow(user)
+    relationshipRepository.Save(user.Relationships)
+    assert.Equal(t, 2, len(relationshipRepository.FindUserId(user.ID)))
+    assert.Equal(t, 2, len(relationshipRepository.FindUserId(following.ID)))
+    assert.Equal(t, true, user.IsFriend(following))
+
+    // When
+    body, _ := json.Marshal(endpoints.FollowBody{FollowingId: following.ID.String()})
+
+    uri := fmt.Sprintf("/users/%s/unfollow", user.ID.String())
+    request := httptest.NewRequest("DELETE", uri, strings.NewReader(string(body)))
+    response := httptest.NewRecorder()
+    router.ServeHTTP(response, request)
+
+    // Then
+    user = userRepository.Find(user.ID)
+    assert.Equal(t, 200, response.Code)
+    assert.Equal(t, 1, len(relationshipRepository.FindUserId(user.ID)))
+    assert.Equal(t, 1, len(relationshipRepository.FindUserId(following.ID)))
+    assert.Equal(t, false, user.IsFriend(following))
 }

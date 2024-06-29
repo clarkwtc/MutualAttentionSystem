@@ -25,3 +25,11 @@ func (repository *RelationshipRepository) Find(followingId uuid.UUID, fanId uuid
 func (repository *RelationshipRepository) Update(relationships []*domain.Relationship) {
     repository.access.Update(relationships)
 }
+
+func (repository *RelationshipRepository) Remove(followingId uuid.UUID, fanId uuid.UUID) {
+    repository.access.Remove(followingId, fanId)
+}
+
+func (repository *RelationshipRepository) Save(relationships []*domain.Relationship) {
+    repository.access.Save(relationships)
+}

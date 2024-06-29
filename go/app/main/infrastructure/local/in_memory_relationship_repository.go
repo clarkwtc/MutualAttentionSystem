@@ -82,3 +82,16 @@ func (repository *InMemoryRelationshipRepository) Update(relationships []*domain
         }
     }
 }
+
+func (repository *InMemoryRelationshipRepository) Remove(followingId uuid.UUID, fanId uuid.UUID) {
+    for index, relationship := range repository.relationships {
+        if relationship.FollowingId == followingId.String() && relationship.FanId == fanId.String() {
+            repository.relationships = append(repository.relationships[:index], repository.relationships[index+1:]...)
+        }
+    }
+}
+
+func (repository *InMemoryRelationshipRepository) Save(relationships []*domain.Relationship) {
+    relationshipsData := toRelationshipsData(relationships)
+    repository.relationships = append(repository.relationships, relationshipsData...)
+}
