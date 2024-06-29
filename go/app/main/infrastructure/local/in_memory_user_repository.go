@@ -60,7 +60,7 @@ func (repository *InMemoryUserRepository) FindByUsername(username string) *domai
     return toUserDomain(userData)
 }
 
-func (repository *InMemoryUserRepository) Register(user *domain.User) {
+func (repository *InMemoryUserRepository) Save(user *domain.User) {
     userData := toUserData(user)
     repository.users = append(repository.users, userData)
 }
