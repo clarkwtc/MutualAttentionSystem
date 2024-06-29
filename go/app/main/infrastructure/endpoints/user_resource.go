@@ -11,12 +11,16 @@ import (
 type UserResource struct {
     RegisterUserUseCase *application.RegisterUserUseCase
     GetUserUseCase      *application.GetUserUseCase
+    FollowUserUseCase   *application.FollowUserUsecase
+    UnFollowUserUseCase *application.UnFollowUserUseCase
 }
 
 func NewUserResource(userRepository domain.IUserRepository, relationshipRepository domain.IRelationshipRepository) *UserResource {
     return &UserResource{
         &application.RegisterUserUseCase{UserRepository: userRepository},
         &application.GetUserUseCase{UserRepository: userRepository, RelationshipRepository: relationshipRepository},
+        &application.FollowUserUsecase{UserRepository: userRepository, RelationshipRepository: relationshipRepository},
+        &application.UnFollowUserUseCase{UserRepository: userRepository, RelationshipRepository: relationshipRepository},
     }
 }
 
@@ -24,22 +28,215 @@ type RegisterUserBody struct {
     Username string `json:"username"`
 }
 
-func (resource *UserResource) RegisterUser(context *gin.Context) {
+func (resource *UserResource) RegisterUser(ctx *gin.Context) {
     var registerUserBody RegisterUserBody
-    err := context.ShouldBindBodyWithJSON(&registerUserBody)
+    err := ctx.ShouldBindBodyWithJSON(&registerUserBody)
     if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
-    user := resource.RegisterUserUseCase.Execute(registerUserBody.Username)
-
-    context.JSON(http.StatusCreated, user.ID)
+    user, err := resource.RegisterUserUseCase.Execute(registerUserBody.Username)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+    ctx.JSON(http.StatusCreated, user.User.ID)
 }
 
-func (resource *UserResource) GetUser(context *gin.Context) {
-    id := context.Query("id")
-    user := resource.GetUserUseCase.Execute(id)
+type GetUserQuery struct {
+    Id string `form:"id"`
+}
 
-    userDTO := dto.ToGetUserDTO(user)
-    context.JSON(http.StatusCreated, userDTO)
+func (resource *UserResource) GetUser(ctx *gin.Context) {
+    var getUserQuery GetUserQuery
+
+    err := ctx.ShouldBindQuery(&getUserQuery)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    event, err := resource.GetUserUseCase.Execute(getUserQuery.Id)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+
+    getUserDTO := dto.ToGetUserDTO(event)
+    ctx.JSON(http.StatusCreated, getUserDTO)
+}
+
+type UserUri struct {
+    Id string `uri:"id"`
+}
+
+type FollowBody struct {
+    FollowingId string `json:"followingId"`
+}
+
+func (resource *UserResource) Follow(ctx *gin.Context) {
+    var userUri UserUri
+
+    err := ctx.ShouldBindUri(&userUri)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    var followBody FollowBody
+
+    err = ctx.ShouldBindBodyWithJSON(&followBody)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    err = resource.FollowUserUseCase.Execute(userUri.Id, followBody.FollowingId)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+
+    ctx.JSON(http.StatusOK, nil)
+}
+
+func (resource *UserResource) UnFollow(ctx *gin.Context) {
+    var userUri UserUri
+
+    err := ctx.ShouldBindUri(&userUri)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    var followBody FollowBody
+
+    err = ctx.ShouldBindBodyWithJSON(&followBody)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    err = resource.UnFollowUserUseCase.Execute(userUri.Id, followBody.FollowingId)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+
+    ctx.JSON(http.StatusOK, nil)
+}
+
+type PageQuery struct {
+    Page  int `form:"page,default=1"`
+    Limit int `form:"limit,default=10"`
+}
+
+const (
+    MaxLimit = 30
+    MinLimit = 1
+    MinPage  = 1
+)
+
+func pageQueryValidation(pageQuery *PageQuery) {
+    if pageQuery.Limit > MaxLimit {
+        pageQuery.Limit = MaxLimit
+    } else if pageQuery.Limit < MinLimit {
+        pageQuery.Limit = MinLimit
+    }
+
+    if pageQuery.Page < MinPage {
+        pageQuery.Page = MinPage
+    }
+}
+
+func (resource *UserResource) GetFollowingList(ctx *gin.Context) {
+    var userUri UserUri
+    err := ctx.ShouldBindUri(&userUri)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    var pageQuery PageQuery
+    err = ctx.ShouldBindQuery(&pageQuery)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    pageQueryValidation(&pageQuery)
+
+    event, err := resource.GetUserUseCase.Execute(userUri.Id)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+
+    getFollowingListDTO, err := dto.ToGetFollowingListDTO(event, pageQuery.Page, pageQuery.Limit)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+    ctx.JSON(http.StatusOK, getFollowingListDTO)
+}
+
+func (resource *UserResource) GetFanList(ctx *gin.Context) {
+    var userUri UserUri
+    err := ctx.ShouldBindUri(&userUri)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    var pageQuery PageQuery
+    err = ctx.ShouldBindQuery(&pageQuery)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    pageQueryValidation(&pageQuery)
+
+    event, err := resource.GetUserUseCase.Execute(userUri.Id)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+
+    getFanListDTO, err := dto.ToGetFanListDTO(event, pageQuery.Page, pageQuery.Limit)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+    ctx.JSON(http.StatusOK, getFanListDTO)
+}
+
+func (resource *UserResource) GetFriendList(ctx *gin.Context) {
+    var userUri UserUri
+    err := ctx.ShouldBindUri(&userUri)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    var pageQuery PageQuery
+    err = ctx.ShouldBindQuery(&pageQuery)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    pageQueryValidation(&pageQuery)
+
+    user, err := resource.GetUserUseCase.Execute(userUri.Id)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+
+    getFriendListDTO, err := dto.ToGetFriendListDTO(user, pageQuery.Page, pageQuery.Limit)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
+    ctx.JSON(http.StatusOK, getFriendListDTO)
 }

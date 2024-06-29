@@ -8,8 +8,8 @@ import (
 
 func initSystem() *domain.MututalAttentionSystem {
     system := domain.NewMutualAttentionSysyem()
-    system.AddUser("sk22")
-    system.AddUser("pk67")
+    system.AddUserByUsername("sk22")
+    system.AddUserByUsername("pk67")
     return system
 }
 

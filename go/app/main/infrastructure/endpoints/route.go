@@ -2,26 +2,50 @@ package endpoints
 
 import (
     "github.com/gin-gonic/gin"
+    "go.mongodb.org/mongo-driver/mongo"
+    "mutualAttentionSystem/app/main/domain/errors"
+    "mutualAttentionSystem/app/main/infrastructure/mongodb"
     "mutualAttentionSystem/app/main/infrastructure/repositories"
+    "time"
 )
 
-func SetupRouter() *gin.Engine {
-    r := gin.Default()
+type Router struct {
+    Engine      *gin.Engine
+    MongoClient *mongo.Client
+}
 
-    userRepository := repositories.NewUserRepository()
-    relationshipRepository := repositories.NewRelationshipRepository()
+func (router *Router) SetupUserResource() {
+    userRepository := repositories.NewUserRepository(mongodb.NewUserRepository(router.MongoClient))
+    relationshipRepository := repositories.NewRelationshipRepository(mongodb.NewRelationshipRepository(router.MongoClient))
     userEndpoints := NewUserResource(userRepository, relationshipRepository)
 
-    userRoutes := r.Group("/users")
+    userRoutes := router.Engine.Group("/users")
     {
         userRoutes.POST("", userEndpoints.RegisterUser)
         userRoutes.GET("", userEndpoints.GetUser)
-        userRoutes.POST("/:id/follow")
-        userRoutes.GET("/:id/followings")
-        userRoutes.DELETE("/:id/unfollow")
-        userRoutes.GET("/:id/fans")
-        userRoutes.GET("/:id/friends")
+        userRoutes.POST("/:id/follow", userEndpoints.Follow)
+        userRoutes.DELETE("/:id/unfollow", userEndpoints.UnFollow)
+        userRoutes.GET("/:id/followings", userEndpoints.GetFollowingList)
+        userRoutes.GET("/:id/fans", userEndpoints.GetFanList)
+        userRoutes.GET("/:id/friends", userEndpoints.GetFriendList)
     }
+}
 
-    return r
+func (router *Router) SetupErrorMiddleware() {
+    errorMiddleware := ErrorMiddleware{}
+    errorMiddleware.RegisterException(errors.NewDuplicatedUserErrorHandler())
+    errorMiddleware.RegisterException(errors.NewNotExistUserErrorHandler())
+    errorMiddleware.RegisterException(errors.NewServiceOverloadErrorHandler())
+    errorMiddleware.RegisterException(errors.NewRequestLimitReachedErrorHandler())
+    errorMiddleware.RegisterException(errors.NewPageSizeTooLargeErrorHandler())
+    router.Engine.Use(errorMiddleware.Execute())
+}
+
+func (router *Router) SetupRetryMiddleware() {
+    router.Engine.Use(RetryMiddleware(3, 200*time.Millisecond))
+}
+
+func (router *Router) SetupRateLimiterMiddleware() {
+    middleware := NewRateLimiterMiddleware(5000, time.Second, 1)
+    router.Engine.Use(middleware.Execute())
 }

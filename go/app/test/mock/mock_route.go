@@ -1,8 +1,6 @@
 package mock
 
 import (
-    "github.com/gin-gonic/gin"
-    "mutualAttentionSystem/app/main/application"
     "mutualAttentionSystem/app/main/domain"
     "mutualAttentionSystem/app/main/infrastructure/endpoints"
 )
@@ -10,27 +8,22 @@ import (
 type Router struct {
     UserRepository         domain.IUserRepository
     RelationshipRepository domain.IRelationshipRepository
+    endpoints.Router
 }
 
-func (mockRouter *Router) SetupRouter() *gin.Engine {
-    r := gin.Default()
+func (mockRouter *Router) SetupMockUserResource() {
+    userRepository := mockRouter.UserRepository
+    relationshipRepository := mockRouter.RelationshipRepository
+    userEndpoints := endpoints.NewUserResource(userRepository, relationshipRepository)
 
-    userEndpoints := endpoints.UserResource{
-        RegisterUserUseCase: &application.RegisterUserUseCase{UserRepository: mockRouter.UserRepository},
-        GetUserUseCase: &application.GetUserUseCase{UserRepository: mockRouter.UserRepository,
-            RelationshipRepository: mockRouter.RelationshipRepository},
-    }
-
-    userRoutes := r.Group("/users")
+    userRoutes := mockRouter.Engine.Group("/users")
     {
         userRoutes.POST("", userEndpoints.RegisterUser)
         userRoutes.GET("", userEndpoints.GetUser)
-        userRoutes.POST("/:id/follow")
-        userRoutes.GET("/:id/followings")
-        userRoutes.DELETE("/:id/unfollow")
-        userRoutes.GET("/:id/fans")
-        userRoutes.GET("/:id/friends")
+        userRoutes.POST("/:id/follow", userEndpoints.Follow)
+        userRoutes.DELETE("/:id/unfollow", userEndpoints.UnFollow)
+        userRoutes.GET("/:id/followings", userEndpoints.GetFollowingList)
+        userRoutes.GET("/:id/fans", userEndpoints.GetFanList)
+        userRoutes.GET("/:id/friends", userEndpoints.GetFriendList)
     }
-
-    return r
 }
