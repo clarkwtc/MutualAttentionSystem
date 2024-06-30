@@ -3,15 +3,14 @@ package repositories
 import (
     "github.com/google/uuid"
     "mutualAttentionSystem/app/main/domain"
-    "mutualAttentionSystem/app/main/infrastructure/local"
 )
 
 type RelationshipRepository struct {
-    access *local.InMemoryRelationshipRepository
+    access domain.IRelationshipRepository
 }
 
-func NewRelationshipRepository() domain.IRelationshipRepository {
-    return &RelationshipRepository{local.NewInMemoryRelationshipRepository()}
+func NewRelationshipRepository(access domain.IRelationshipRepository) domain.IRelationshipRepository {
+    return &RelationshipRepository{access}
 }
 
 func (repository *RelationshipRepository) FindUserId(userId uuid.UUID) []*domain.Relationship {

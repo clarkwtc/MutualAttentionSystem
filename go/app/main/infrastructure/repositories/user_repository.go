@@ -3,15 +3,14 @@ package repositories
 import (
     "github.com/google/uuid"
     "mutualAttentionSystem/app/main/domain"
-    "mutualAttentionSystem/app/main/infrastructure/local"
 )
 
 type UserRepository struct {
-    access *local.InMemoryUserRepository
+    access domain.IUserRepository
 }
 
-func NewUserRepository() domain.IUserRepository {
-    return &UserRepository{local.NewInMemoryUserRepository()}
+func NewUserRepository(access domain.IUserRepository) domain.IUserRepository {
+    return &UserRepository{access}
 }
 
 func (repository *UserRepository) Find(id uuid.UUID) *domain.User {

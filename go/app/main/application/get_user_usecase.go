@@ -11,8 +11,7 @@ type GetUserUseCase struct {
 }
 
 func (usecase *GetUserUseCase) Execute(id string) *domain.User {
-    ii := uuid.MustParse(id)
-    user := usecase.UserRepository.Find(ii)
+    user := usecase.UserRepository.Find(uuid.MustParse(id))
     if user == nil {
         return nil
     }
