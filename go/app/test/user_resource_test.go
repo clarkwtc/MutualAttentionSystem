@@ -22,8 +22,8 @@ var userRepository = repositories.NewUserRepository()
 var relationshipRepository = repositories.NewRelationshipRepository()
 
 func init() {
-    system.AddUser("sk22")
-    system.AddUser("cp200")
+    system.AddUserByUsername("sk22")
+    system.AddUserByUsername("cp200")
 
     for _, user := range system.Users {
         userRepository.Save(user)
@@ -123,4 +123,31 @@ func TestUnFollowUser(t *testing.T) {
     assert.Equal(t, 1, len(relationshipRepository.FindUserId(user.ID)))
     assert.Equal(t, 1, len(relationshipRepository.FindUserId(following.ID)))
     assert.Equal(t, false, user.IsFriend(following))
+}
+
+func TestGetFollowingListDTO(t *testing.T) {
+    // Given
+    user := system.Users[0]
+    following := system.Users[1]
+    user.Follow(following)
+    relationshipRepository.Save(user.Relationships)
+
+    // When
+    uri := fmt.Sprintf("/users/%s/followings", user.ID.String())
+    request := httptest.NewRequest("GET", uri, nil)
+    response := httptest.NewRecorder()
+    router.ServeHTTP(response, request)
+
+    // Then
+    var getFollowingListDTO dto.GetFollowingListDTO
+    err := json.NewDecoder(response.Body).Decode(&getFollowingListDTO)
+    if err != nil {
+        return
+    }
+
+    assert.Equal(t, 1, len(getFollowingListDTO.Following))
+    for _, followingDTO := range getFollowingListDTO.Following {
+        assert.Equal(t, following.ID.String(), followingDTO.Id)
+        assert.Equal(t, following.Username, followingDTO.Username)
+    }
 }

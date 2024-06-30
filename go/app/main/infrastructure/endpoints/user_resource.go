@@ -28,34 +28,34 @@ type RegisterUserBody struct {
     Username string `json:"username"`
 }
 
-func (resource *UserResource) RegisterUser(context *gin.Context) {
+func (resource *UserResource) RegisterUser(ctx *gin.Context) {
     var registerUserBody RegisterUserBody
-    err := context.ShouldBindBodyWithJSON(&registerUserBody)
+    err := ctx.ShouldBindBodyWithJSON(&registerUserBody)
     if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
     user := resource.RegisterUserUseCase.Execute(registerUserBody.Username)
 
-    context.JSON(http.StatusCreated, user.ID)
+    ctx.JSON(http.StatusCreated, user.ID)
 }
 
 type GetUserQuery struct {
     Id string `form:"id"`
 }
 
-func (resource *UserResource) GetUser(context *gin.Context) {
+func (resource *UserResource) GetUser(ctx *gin.Context) {
     var getUserQuery GetUserQuery
 
-    err := context.ShouldBindQuery(&getUserQuery)
+    err := ctx.ShouldBindQuery(&getUserQuery)
     if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
     user := resource.GetUserUseCase.Execute(getUserQuery.Id)
 
-    userDTO := dto.ToGetUserDTO(user)
-    context.JSON(http.StatusCreated, userDTO)
+    getUserDTO := dto.ToGetUserDTO(user)
+    ctx.JSON(http.StatusCreated, getUserDTO)
 }
 
 type UserUri struct {
@@ -66,46 +66,60 @@ type FollowBody struct {
     FollowingId string `json:"followingId"`
 }
 
-func (resource *UserResource) Follow(context *gin.Context) {
+func (resource *UserResource) Follow(ctx *gin.Context) {
     var userUri UserUri
 
-    err := context.ShouldBindUri(&userUri)
+    err := ctx.ShouldBindUri(&userUri)
     if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 
     var followBody FollowBody
 
-    err = context.ShouldBindBodyWithJSON(&followBody)
+    err = ctx.ShouldBindBodyWithJSON(&followBody)
     if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 
     resource.FollowUserUseCase.Execute(userUri.Id, followBody.FollowingId)
 
-    context.JSON(http.StatusOK, nil)
+    ctx.JSON(http.StatusOK, nil)
 }
 
-func (resource *UserResource) UnFollow(context *gin.Context) {
+func (resource *UserResource) UnFollow(ctx *gin.Context) {
     var userUri UserUri
 
-    err := context.ShouldBindUri(&userUri)
+    err := ctx.ShouldBindUri(&userUri)
     if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 
     var followBody FollowBody
 
-    err = context.ShouldBindBodyWithJSON(&followBody)
+    err = ctx.ShouldBindBodyWithJSON(&followBody)
     if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 
     resource.UnFollowUserUseCase.Execute(userUri.Id, followBody.FollowingId)
 
-    context.JSON(http.StatusOK, nil)
+    ctx.JSON(http.StatusOK, nil)
+}
+
+func (resource *UserResource) GetFollowingList(ctx *gin.Context) {
+    var userUri UserUri
+    err := ctx.ShouldBindUri(&userUri)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    user := resource.GetUserUseCase.Execute(userUri.Id)
+
+    getFollowingListDTO := dto.ToGetFollowingListDTO(user.GetFollowings())
+    ctx.JSON(http.StatusOK, getFollowingListDTO)
 }

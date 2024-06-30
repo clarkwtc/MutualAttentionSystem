@@ -8,13 +8,22 @@ func NewMutualAttentionSysyem() *MututalAttentionSystem {
     return &MututalAttentionSystem{}
 }
 
-func (system *MututalAttentionSystem) AddUser(username string) {
+func (system *MututalAttentionSystem) AddUserByUsername(username string) {
     for _, _user := range system.Users {
         if _user.Username == username {
             return
         }
     }
     system.Users = append(system.Users, NewUser(username))
+}
+
+func (system *MututalAttentionSystem) AddUser(user *User) {
+    for _, _user := range system.Users {
+        if _user.Username == user.Username {
+            return
+        }
+    }
+    system.Users = append(system.Users, user)
 }
 
 func existUser(users []*User, targetUser *User) bool {

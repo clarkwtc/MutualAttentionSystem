@@ -16,7 +16,7 @@ func (usecase *RegisterUserUseCase) Execute(username string) *domain.User {
     }
 
     system := domain.NewMutualAttentionSysyem()
-    system.AddUser(username)
+    system.AddUserByUsername(username)
     user = system.Users[0]
 
     usecase.UserRepository.Save(user)
