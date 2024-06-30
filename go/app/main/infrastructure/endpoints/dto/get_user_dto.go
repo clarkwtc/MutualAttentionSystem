@@ -3,11 +3,11 @@ package dto
 import "mutualAttentionSystem/app/main/domain"
 
 type GetUserDTO struct {
-    Id         string
-    Username   string
-    Followings int
-    Friends    int
-    Fans       int
+    Id         string `json:"id"`
+    Username   string `json:"username"`
+    Followings int    `json:"followings"`
+    Friends    int    `json:"friends"`
+    Fans       int    `json:"fans"`
 }
 
 func ToGetUserDTO(user *domain.User) *GetUserDTO {

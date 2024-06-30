@@ -18,9 +18,9 @@ func SetupRouter() *gin.Engine {
         userRoutes.GET("", userEndpoints.GetUser)
         userRoutes.POST("/:id/follow", userEndpoints.Follow)
         userRoutes.DELETE("/:id/unfollow", userEndpoints.UnFollow)
-        userRoutes.GET("/:id/followings")
-        userRoutes.GET("/:id/fans")
-        userRoutes.GET("/:id/friends")
+        userRoutes.GET("/:id/followings", userEndpoints.GetFollowingList)
+        userRoutes.GET("/:id/fans", userEndpoints.GetFanList)
+        userRoutes.GET("/:id/friends", userEndpoints.GetFriendList)
     }
 
     return r
