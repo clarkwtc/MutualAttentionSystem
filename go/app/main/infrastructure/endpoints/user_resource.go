@@ -137,3 +137,17 @@ func (resource *UserResource) GetFanList(ctx *gin.Context) {
     getFanListDTO := dto.ToGetFanListDTO(user.GetFans())
     ctx.JSON(http.StatusOK, getFanListDTO)
 }
+
+func (resource *UserResource) GetFriendList(ctx *gin.Context) {
+    var userUri UserUri
+    err := ctx.ShouldBindUri(&userUri)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    user := resource.GetUserUseCase.Execute(userUri.Id)
+
+    getFriendListDTO := dto.ToGetFriendListDTO(user.GetFriends())
+    ctx.JSON(http.StatusOK, getFriendListDTO)
+}

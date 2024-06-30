@@ -26,7 +26,7 @@ func (mockRouter *Router) SetupRouter() *gin.Engine {
         userRoutes.DELETE("/:id/unfollow", userEndpoints.UnFollow)
         userRoutes.GET("/:id/followings", userEndpoints.GetFollowingList)
         userRoutes.GET("/:id/fans", userEndpoints.GetFanList)
-        userRoutes.GET("/:id/friends")
+        userRoutes.GET("/:id/friends", userEndpoints.GetFriendList)
     }
 
     return r
