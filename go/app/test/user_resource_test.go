@@ -145,9 +145,36 @@ func TestGetFollowingListDTO(t *testing.T) {
         return
     }
 
-    assert.Equal(t, 1, len(getFollowingListDTO.Following))
-    for _, followingDTO := range getFollowingListDTO.Following {
+    assert.Equal(t, 1, len(getFollowingListDTO.Followings))
+    for _, followingDTO := range getFollowingListDTO.Followings {
         assert.Equal(t, following.ID.String(), followingDTO.Id)
         assert.Equal(t, following.Username, followingDTO.Username)
+    }
+}
+
+func TestGetFanListDTO(t *testing.T) {
+    // Given
+    user := system.Users[0]
+    following := system.Users[1]
+    user.Follow(following)
+    relationshipRepository.Save(user.Relationships)
+
+    // When
+    uri := fmt.Sprintf("/users/%s/fans", following.ID.String())
+    request := httptest.NewRequest("GET", uri, nil)
+    response := httptest.NewRecorder()
+    router.ServeHTTP(response, request)
+
+    // Then
+    var getFanListDTO dto.GetFanListDTO
+    err := json.NewDecoder(response.Body).Decode(&getFanListDTO)
+    if err != nil {
+        return
+    }
+
+    assert.Equal(t, 1, len(getFanListDTO.Fans))
+    for _, fanDTO := range getFanListDTO.Fans {
+        assert.Equal(t, user.ID.String(), fanDTO.Id)
+        assert.Equal(t, user.Username, fanDTO.Username)
     }
 }

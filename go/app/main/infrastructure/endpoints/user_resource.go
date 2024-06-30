@@ -123,3 +123,17 @@ func (resource *UserResource) GetFollowingList(ctx *gin.Context) {
     getFollowingListDTO := dto.ToGetFollowingListDTO(user.GetFollowings())
     ctx.JSON(http.StatusOK, getFollowingListDTO)
 }
+
+func (resource *UserResource) GetFanList(ctx *gin.Context) {
+    var userUri UserUri
+    err := ctx.ShouldBindUri(&userUri)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    user := resource.GetUserUseCase.Execute(userUri.Id)
+
+    getFanListDTO := dto.ToGetFanListDTO(user.GetFans())
+    ctx.JSON(http.StatusOK, getFanListDTO)
+}
