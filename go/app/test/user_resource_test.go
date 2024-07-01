@@ -8,6 +8,7 @@ import (
     "mutualAttentionSystem/app/main/domain"
     "mutualAttentionSystem/app/main/infrastructure/endpoints"
     "mutualAttentionSystem/app/main/infrastructure/endpoints/dto"
+    "mutualAttentionSystem/app/main/infrastructure/local"
     "mutualAttentionSystem/app/main/infrastructure/repositories"
     "mutualAttentionSystem/app/test/mock"
     "net/http/httptest"
@@ -18,8 +19,8 @@ import (
 
 var router *gin.Engine = nil
 var system = domain.NewMutualAttentionSysyem()
-var userRepository = repositories.NewUserRepository()
-var relationshipRepository = repositories.NewRelationshipRepository()
+var userRepository = repositories.NewUserRepository(local.NewInMemoryUserRepository())
+var relationshipRepository = repositories.NewRelationshipRepository(local.NewInMemoryRelationshipRepository())
 
 func init() {
     system.AddUserByUsername("sk22")
