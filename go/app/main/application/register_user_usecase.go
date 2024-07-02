@@ -1,18 +1,19 @@
 package application
 
 import (
-    "mutualAttentionSystem/app/main/domain"
+	"mutualAttentionSystem/app/main/domain"
+	"mutualAttentionSystem/app/main/domain/events"
 )
 
 type RegisterUserUseCase struct {
     UserRepository domain.IUserRepository
 }
 
-func (usecase *RegisterUserUseCase) Execute(username string) *domain.User {
+func (usecase *RegisterUserUseCase) Execute(username string) *events.GetUserEvent {
     user := usecase.UserRepository.FindByUsername(username)
 
     if user != nil {
-        return user
+        return &events.GetUserEvent{User: user}
     }
 
     system := domain.NewMutualAttentionSysyem()
@@ -20,5 +21,5 @@ func (usecase *RegisterUserUseCase) Execute(username string) *domain.User {
     user = system.Users[0]
 
     usecase.UserRepository.Save(user)
-    return user
+    return &events.GetUserEvent{User: user}
 }

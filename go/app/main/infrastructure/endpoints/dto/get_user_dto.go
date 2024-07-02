@@ -1,6 +1,8 @@
 package dto
 
-import "mutualAttentionSystem/app/main/domain"
+import (
+	"mutualAttentionSystem/app/main/domain/events"
+)
 
 type GetUserDTO struct {
     Id         string `json:"id"`
@@ -10,7 +12,8 @@ type GetUserDTO struct {
     Fans       int    `json:"fans"`
 }
 
-func ToGetUserDTO(user *domain.User) *GetUserDTO {
+func ToGetUserDTO(event *events.GetUserEvent) *GetUserDTO {
+    user := event.User
     return &GetUserDTO{user.ID.String(), user.Username, len(user.GetFollowings()),
         len(user.GetFriends()), len(user.GetFans())}
 }
