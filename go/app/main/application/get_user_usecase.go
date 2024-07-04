@@ -4,6 +4,7 @@ import (
     "github.com/google/uuid"
     "mutualAttentionSystem/app/main/domain"
     "mutualAttentionSystem/app/main/domain/events"
+    "mutualAttentionSystem/app/main/domain/exceptions"
 )
 
 type GetUserUseCase struct {
@@ -11,14 +12,14 @@ type GetUserUseCase struct {
     RelationshipRepository domain.IRelationshipRepository
 }
 
-func (usecase *GetUserUseCase) Execute(id string) *events.GetUserEvent {
+func (usecase *GetUserUseCase) Execute(id string) (*events.GetUserEvent, error) {
     user := usecase.UserRepository.Find(uuid.MustParse(id))
     if user == nil {
-        return nil
+        return nil, &exceptions.NotExistUserError{}
     }
-
+    
     sysyem := domain.NewMutualAttentionSysyem()
-    SetRelationshipsOfUser(user, usecase.UserRepository, usecase.RelationshipRepository)
     sysyem.AddUser(user)
-    return &events.GetUserEvent{User: sysyem.GetUser(id)}
+    SetRelationshipsOfUser(user, usecase.UserRepository, usecase.RelationshipRepository)
+    return &events.GetUserEvent{User: sysyem.GetUser(id)}, nil
 }

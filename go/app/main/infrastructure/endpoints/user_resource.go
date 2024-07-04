@@ -9,10 +9,10 @@ import (
 )
 
 type UserResource struct {
-    RegisterUserUseCase     *application.RegisterUserUseCase
-    GetUserUseCase          *application.GetUserUseCase
-    FollowUserUseCase       *application.FollowUserUsecase
-    UnFollowUserUseCase     *application.UnFollowUserUseCase
+    RegisterUserUseCase *application.RegisterUserUseCase
+    GetUserUseCase      *application.GetUserUseCase
+    FollowUserUseCase   *application.FollowUserUsecase
+    UnFollowUserUseCase *application.UnFollowUserUseCase
 }
 
 func NewUserResource(userRepository domain.IUserRepository, relationshipRepository domain.IRelationshipRepository) *UserResource {
@@ -35,8 +35,11 @@ func (resource *UserResource) RegisterUser(ctx *gin.Context) {
         ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
-    user := resource.RegisterUserUseCase.Execute(registerUserBody.Username)
-
+    user, err := resource.RegisterUserUseCase.Execute(registerUserBody.Username)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
     ctx.JSON(http.StatusCreated, user.User.ID)
 }
 
@@ -52,7 +55,11 @@ func (resource *UserResource) GetUser(ctx *gin.Context) {
         ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
-    event := resource.GetUserUseCase.Execute(getUserQuery.Id)
+    event, err := resource.GetUserUseCase.Execute(getUserQuery.Id)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
 
     getUserDTO := dto.ToGetUserDTO(event)
     ctx.JSON(http.StatusCreated, getUserDTO)
@@ -83,7 +90,11 @@ func (resource *UserResource) Follow(ctx *gin.Context) {
         return
     }
 
-    resource.FollowUserUseCase.Execute(userUri.Id, followBody.FollowingId)
+    err = resource.FollowUserUseCase.Execute(userUri.Id, followBody.FollowingId)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
 
     ctx.JSON(http.StatusOK, nil)
 }
@@ -105,7 +116,11 @@ func (resource *UserResource) UnFollow(ctx *gin.Context) {
         return
     }
 
-    resource.UnFollowUserUseCase.Execute(userUri.Id, followBody.FollowingId)
+    err = resource.UnFollowUserUseCase.Execute(userUri.Id, followBody.FollowingId)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
 
     ctx.JSON(http.StatusOK, nil)
 }
@@ -150,7 +165,11 @@ func (resource *UserResource) GetFollowingList(ctx *gin.Context) {
 
     pageQueryValidation(&pageQuery)
 
-    event := resource.GetUserUseCase.Execute(userUri.Id)
+    event, err := resource.GetUserUseCase.Execute(userUri.Id)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
 
     getFollowingListDTO := dto.ToGetFollowingListDTO(event, pageQuery.Page, pageQuery.Limit)
     ctx.JSON(http.StatusOK, getFollowingListDTO)
@@ -173,7 +192,11 @@ func (resource *UserResource) GetFanList(ctx *gin.Context) {
 
     pageQueryValidation(&pageQuery)
 
-    event := resource.GetUserUseCase.Execute(userUri.Id)
+    event, err := resource.GetUserUseCase.Execute(userUri.Id)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
 
     getFanListDTO := dto.ToGetFanListDTO(event, pageQuery.Page, pageQuery.Limit)
     ctx.JSON(http.StatusOK, getFanListDTO)
@@ -196,7 +219,11 @@ func (resource *UserResource) GetFriendList(ctx *gin.Context) {
 
     pageQueryValidation(&pageQuery)
 
-    user := resource.GetUserUseCase.Execute(userUri.Id)
+    user, err := resource.GetUserUseCase.Execute(userUri.Id)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
 
     getFriendListDTO := dto.ToGetFriendListDTO(user, pageQuery.Page, pageQuery.Limit)
     ctx.JSON(http.StatusOK, getFriendListDTO)

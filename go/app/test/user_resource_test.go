@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "fmt"
     "github.com/gin-gonic/gin"
+    "github.com/google/uuid"
     "github.com/stretchr/testify/assert"
     "mutualAttentionSystem/app/main/domain"
     "mutualAttentionSystem/app/main/infrastructure/endpoints"
@@ -17,7 +18,7 @@ import (
     "testing"
 )
 
-var router *gin.Engine = nil
+var mockRouter *gin.Engine = nil
 var system = domain.NewMutualAttentionSysyem()
 var userRepository = repositories.NewUserRepository(local.NewInMemoryUserRepository())
 var relationshipRepository = repositories.NewRelationshipRepository(local.NewInMemoryRelationshipRepository())
@@ -29,11 +30,13 @@ func init() {
     for _, user := range system.Users {
         userRepository.Save(user)
     }
+    router := endpoints.Router{Engine: gin.Default()}
+    r := mock.Router{UserRepository: userRepository,
+        RelationshipRepository: relationshipRepository, Router: router}
+    r.SetupErrorHandler()
+    r.SetupMockUserResource()
 
-    mockRouter := mock.Router{UserRepository: userRepository,
-        RelationshipRepository: relationshipRepository}
-
-    router = mockRouter.SetupRouter()
+    mockRouter = r.Engine
 }
 
 func TestRegisterUser(t *testing.T) {
@@ -43,11 +46,25 @@ func TestRegisterUser(t *testing.T) {
     // When
     request := httptest.NewRequest("POST", "/users", strings.NewReader(string(body)))
     response := httptest.NewRecorder()
-    router.ServeHTTP(response, request)
+    mockRouter.ServeHTTP(response, request)
 
     // Then
     assert.Equal(t, 201, response.Code)
     assert.NotEmpty(t, response.Body.String())
+}
+
+func TestRegisterDuplicatedUserFail(t *testing.T) {
+    // Given
+    body, _ := json.Marshal(endpoints.RegisterUserBody{Username: "cp200"})
+
+    // When
+    request := httptest.NewRequest("POST", "/users", strings.NewReader(string(body)))
+    response := httptest.NewRecorder()
+    mockRouter.ServeHTTP(response, request)
+
+    // Then
+    assert.Equal(t, 409, response.Code)
+    assert.JSONEq(t, `{"error": "Username is exists"}`, response.Body.String())
 }
 
 func TestGetUser(t *testing.T) {
@@ -62,7 +79,7 @@ func TestGetUser(t *testing.T) {
     fullUrl := fmt.Sprintf("%s?%s", "/users", params.Encode())
     request := httptest.NewRequest("GET", fullUrl, nil)
     response := httptest.NewRecorder()
-    router.ServeHTTP(response, request)
+    mockRouter.ServeHTTP(response, request)
 
     // Then
     var getUserDTO dto.GetUserDTO
@@ -79,6 +96,22 @@ func TestGetUser(t *testing.T) {
     assert.Equal(t, 0, getUserDTO.Fans)
 }
 
+func TestNotExistedUserFail(t *testing.T) {
+    // When
+    params := url.Values{}
+    params.Add("id", uuid.New().String())
+
+    // 將查詢參數附加到基礎 URL
+    fullUrl := fmt.Sprintf("%s?%s", "/users", params.Encode())
+    request := httptest.NewRequest("GET", fullUrl, nil)
+    response := httptest.NewRecorder()
+    mockRouter.ServeHTTP(response, request)
+
+    // Then
+    assert.Equal(t, 404, response.Code)
+    assert.JSONEq(t, `{"error": "User is not exists"}`, response.Body.String())
+}
+
 func TestFollowUser(t *testing.T) {
     // Given
     user := system.Users[0]
@@ -90,13 +123,31 @@ func TestFollowUser(t *testing.T) {
     uri := fmt.Sprintf("/users/%s/follow", user.ID.String())
     request := httptest.NewRequest("POST", uri, strings.NewReader(string(body)))
     response := httptest.NewRecorder()
-    router.ServeHTTP(response, request)
+    mockRouter.ServeHTTP(response, request)
 
     // Then
     relationships := relationshipRepository.Find(following.ID, user.ID)
     assert.Equal(t, 200, response.Code)
     assert.Equal(t, 1, len(relationships))
     assert.Equal(t, false, relationships[0].IsFriend)
+}
+
+func TestFollowNotExistUserFail(t *testing.T) {
+    // Given
+    userId := uuid.New().String()
+    followingId := uuid.New().String()
+
+    // When
+    body, _ := json.Marshal(endpoints.FollowBody{FollowingId: followingId})
+
+    uri := fmt.Sprintf("/users/%s/follow", userId)
+    request := httptest.NewRequest("POST", uri, strings.NewReader(string(body)))
+    response := httptest.NewRecorder()
+    mockRouter.ServeHTTP(response, request)
+
+    // Then
+    assert.Equal(t, 404, response.Code)
+    assert.JSONEq(t, `{"error": "User is not exists"}`, response.Body.String())
 }
 
 func TestUnFollowUser(t *testing.T) {
@@ -116,7 +167,7 @@ func TestUnFollowUser(t *testing.T) {
     uri := fmt.Sprintf("/users/%s/unfollow", user.ID.String())
     request := httptest.NewRequest("DELETE", uri, strings.NewReader(string(body)))
     response := httptest.NewRecorder()
-    router.ServeHTTP(response, request)
+    mockRouter.ServeHTTP(response, request)
 
     // Then
     user = userRepository.Find(user.ID)
@@ -124,6 +175,30 @@ func TestUnFollowUser(t *testing.T) {
     assert.Equal(t, 1, len(relationshipRepository.FindUserId(user.ID)))
     assert.Equal(t, 1, len(relationshipRepository.FindUserId(following.ID)))
     assert.Equal(t, false, user.IsFriend(following))
+}
+
+func TestUnfollowNotUserFail(t *testing.T) {
+    // Given
+    user := system.Users[0]
+    following := system.Users[1]
+    user.Follow(following)
+    following.Follow(user)
+    relationshipRepository.Save(user.Relationships)
+    assert.Equal(t, 2, len(relationshipRepository.FindUserId(user.ID)))
+    assert.Equal(t, 2, len(relationshipRepository.FindUserId(following.ID)))
+    assert.Equal(t, true, user.IsFriend(following))
+
+    // When
+    body, _ := json.Marshal(endpoints.FollowBody{FollowingId: uuid.New().String()})
+
+    uri := fmt.Sprintf("/users/%s/unfollow", uuid.New().String())
+    request := httptest.NewRequest("DELETE", uri, strings.NewReader(string(body)))
+    response := httptest.NewRecorder()
+    mockRouter.ServeHTTP(response, request)
+
+    // Then
+    assert.Equal(t, 404, response.Code)
+    assert.JSONEq(t, `{"error": "User is not exists"}`, response.Body.String())
 }
 
 func TestGetFollowingListDTO(t *testing.T) {
@@ -137,7 +212,7 @@ func TestGetFollowingListDTO(t *testing.T) {
     uri := fmt.Sprintf("/users/%s/followings", user.ID.String())
     request := httptest.NewRequest("GET", uri, nil)
     response := httptest.NewRecorder()
-    router.ServeHTTP(response, request)
+    mockRouter.ServeHTTP(response, request)
 
     // Then
     var getFollowingListDTO dto.GetFollowingListDTO
@@ -164,7 +239,7 @@ func TestGetFanListDTO(t *testing.T) {
     uri := fmt.Sprintf("/users/%s/fans", following.ID.String())
     request := httptest.NewRequest("GET", uri, nil)
     response := httptest.NewRecorder()
-    router.ServeHTTP(response, request)
+    mockRouter.ServeHTTP(response, request)
 
     // Then
     var getFanListDTO dto.GetFanListDTO
@@ -192,7 +267,7 @@ func TestGetFriendListDTO(t *testing.T) {
     uri := fmt.Sprintf("/users/%s/friends", user.ID.String())
     request := httptest.NewRequest("GET", uri, nil)
     response := httptest.NewRecorder()
-    router.ServeHTTP(response, request)
+    mockRouter.ServeHTTP(response, request)
 
     // Then
     var getFrindeListDTO dto.GetFriendListDTO
