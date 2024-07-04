@@ -1,7 +1,6 @@
 package mock
 
 import (
-    "github.com/gin-gonic/gin"
     "mutualAttentionSystem/app/main/domain"
     "mutualAttentionSystem/app/main/infrastructure/endpoints"
 )
@@ -9,16 +8,15 @@ import (
 type Router struct {
     UserRepository         domain.IUserRepository
     RelationshipRepository domain.IRelationshipRepository
+    endpoints.Router
 }
 
-func (mockRouter *Router) SetupRouter() *gin.Engine {
-    r := gin.Default()
-
+func (mockRouter *Router) SetupMockUserResource() {
     userRepository := mockRouter.UserRepository
     relationshipRepository := mockRouter.RelationshipRepository
     userEndpoints := endpoints.NewUserResource(userRepository, relationshipRepository)
 
-    userRoutes := r.Group("/users")
+    userRoutes := mockRouter.Engine.Group("/users")
     {
         userRoutes.POST("", userEndpoints.RegisterUser)
         userRoutes.GET("", userEndpoints.GetUser)
@@ -28,6 +26,4 @@ func (mockRouter *Router) SetupRouter() *gin.Engine {
         userRoutes.GET("/:id/fans", userEndpoints.GetFanList)
         userRoutes.GET("/:id/friends", userEndpoints.GetFriendList)
     }
-
-    return r
 }

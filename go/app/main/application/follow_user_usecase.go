@@ -3,6 +3,7 @@ package application
 import (
     "github.com/google/uuid"
     "mutualAttentionSystem/app/main/domain"
+    "mutualAttentionSystem/app/main/domain/exceptions"
 )
 
 type FollowUserUsecase struct {
@@ -10,11 +11,15 @@ type FollowUserUsecase struct {
     RelationshipRepository domain.IRelationshipRepository
 }
 
-func (usecase *FollowUserUsecase) Execute(userId string, followId string) {
+func (usecase *FollowUserUsecase) Execute(userId string, followId string) error {
     var usersId []uuid.UUID
     usersId = append(usersId, uuid.MustParse(userId))
     usersId = append(usersId, uuid.MustParse(followId))
     users := usecase.UserRepository.FindByIds(usersId)
+
+    if len(users) != 2 {
+        return &exceptions.NotExistUserError{}
+    }
 
     system := domain.NewMutualAttentionSysyem()
     system.AddUserAll(users)
@@ -28,4 +33,5 @@ func (usecase *FollowUserUsecase) Execute(userId string, followId string) {
     user.Follow(following)
 
     usecase.RelationshipRepository.Update(user.Relationships)
+    return nil
 }
