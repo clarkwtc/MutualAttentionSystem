@@ -9,7 +9,9 @@ import (
 func main() {
     client := mongodb.Init()
     router := endpoints.Router{Engine: gin.Default(), MongoClient: client}
-    router.SetupErrorHandler()
+    router.SetupErrorMiddleware()
+    router.SetupRetryMiddleware()
+
     router.SetupUserResource()
     err := router.Engine.Run(":8080")
     if err != nil {

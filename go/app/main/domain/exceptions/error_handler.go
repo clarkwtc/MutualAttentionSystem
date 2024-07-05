@@ -16,9 +16,11 @@ type ErrorHandler struct {
 }
 
 func (handler *ErrorHandler) Handle(ctx *gin.Context, error error) {
-    if handler.Concrete.Match(error) {
+    if handler.Concrete == nil{
+        return
+    }else if handler.Concrete.Match(error) {
         handler.Concrete.Response(ctx)
-    } else if handler.Concrete != nil {
+    } else{
         handler.Concrete.Handle(ctx, error)
     }
 }
