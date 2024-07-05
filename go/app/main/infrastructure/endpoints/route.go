@@ -6,12 +6,12 @@ import (
     "mutualAttentionSystem/app/main/domain/exceptions"
     "mutualAttentionSystem/app/main/infrastructure/mongodb"
     "mutualAttentionSystem/app/main/infrastructure/repositories"
+    "time"
 )
 
 type Router struct {
     Engine      *gin.Engine
     MongoClient *mongo.Client
-    exceptions.ErrorHandler
 }
 
 func (router *Router) SetupUserResource() {
@@ -31,25 +31,14 @@ func (router *Router) SetupUserResource() {
     }
 }
 
-func (router *Router) SetupErrorHandler() {
-    router.registerException(exceptions.NewDuplicatedUserErrorHandler())
-    router.registerException(exceptions.NewNotExistUserErrorHandler())
-
-    router.Engine.Use(router.errorHandler())
+func (router *Router) SetupErrorMiddleware() {
+    errorMiddleware := ErrorMiddleware{}
+    errorMiddleware.RegisterException(exceptions.NewDuplicatedUserErrorHandler())
+    errorMiddleware.RegisterException(exceptions.NewNotExistUserErrorHandler())
+    errorMiddleware.RegisterException(exceptions.NewServiceOverloadErrorHandler())
+    router.Engine.Use(errorMiddleware.ErrorMiddleware())
 }
 
-func (router *Router) registerException(exceptionHandler exceptions.IErrorHandler) {
-    exceptionHandler.SetNext(router.ErrorHandler.Concrete)
-    router.ErrorHandler.Concrete = exceptionHandler
-}
-
-func (router *Router) errorHandler() gin.HandlerFunc {
-    return func(ctx *gin.Context) {
-        ctx.Next()
-
-        if len(ctx.Errors) > 0 {
-            err := ctx.Errors.Last().Err
-            router.Handle(ctx, err)
-        }
-    }
+func (router *Router) SetupRetryMiddleware() {
+    router.Engine.Use(RetryMiddleware(3, 200*time.Millisecond))
 }
