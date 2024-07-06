@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+    "errors"
     "github.com/gin-gonic/gin"
     "mutualAttentionSystem/app/main/application"
     "mutualAttentionSystem/app/main/domain"
@@ -48,6 +49,8 @@ type GetUserQuery struct {
 }
 
 func (resource *UserResource) GetUser(ctx *gin.Context) {
+    ctx.Error(errors.New("asad"))
+    return
     var getUserQuery GetUserQuery
 
     err := ctx.ShouldBindQuery(&getUserQuery)
