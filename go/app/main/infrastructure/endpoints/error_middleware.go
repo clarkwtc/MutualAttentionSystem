@@ -2,14 +2,14 @@ package endpoints
 
 import (
     "github.com/gin-gonic/gin"
-    "mutualAttentionSystem/app/main/domain/exceptions"
+    "mutualAttentionSystem/app/main/domain/errors"
 )
 
 type ErrorMiddleware struct {
-    exceptions.ErrorHandler
+    errors.ErrorHandler
 }
 
-func (handler *ErrorMiddleware) RegisterException(exceptionHandler exceptions.IErrorHandler) {
+func (handler *ErrorMiddleware) RegisterException(exceptionHandler errors.IErrorHandler) {
     exceptionHandler.SetNext(handler.Concrete)
     handler.Concrete = exceptionHandler
 }

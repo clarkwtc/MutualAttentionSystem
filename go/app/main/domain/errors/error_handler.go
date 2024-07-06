@@ -1,4 +1,4 @@
-package exceptions
+package errors
 
 import (
     "github.com/gin-gonic/gin"
@@ -16,11 +16,11 @@ type ErrorHandler struct {
 }
 
 func (handler *ErrorHandler) Handle(ctx *gin.Context, error error) {
-    if handler.Concrete == nil{
+    if handler.Concrete == nil {
         return
-    }else if handler.Concrete.Match(error) {
+    } else if handler.Concrete.Match(error) {
         handler.Concrete.Response(ctx)
-    } else{
+    } else {
         handler.Concrete.Handle(ctx, error)
     }
 }

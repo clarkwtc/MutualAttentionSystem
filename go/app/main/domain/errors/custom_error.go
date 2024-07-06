@@ -1,4 +1,4 @@
-package exceptions
+package errors
 
 type ICustomError interface {
     Error() string

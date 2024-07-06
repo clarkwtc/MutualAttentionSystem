@@ -2,7 +2,7 @@ package endpoints
 
 import (
     "github.com/gin-gonic/gin"
-    "mutualAttentionSystem/app/main/domain/exceptions"
+    "mutualAttentionSystem/app/main/domain/errors"
     "net/http"
     "time"
 )
@@ -24,7 +24,7 @@ func RetryMiddleware(retries int, delay time.Duration) gin.HandlerFunc {
             if len(ctx.Errors) > 0 {
                 err := ctx.Errors.Last().Err
                 switch err.(type) {
-                case exceptions.ICustomError:
+                case errors.ICustomError:
                     return
                 }
             }
@@ -32,6 +32,6 @@ func RetryMiddleware(retries int, delay time.Duration) gin.HandlerFunc {
             innerDelay *= 2
         }
 
-        ctx.Error(exceptions.NewServiceOverloadError("Max retry attempts reached"))
+        ctx.Error(errors.NewServiceOverloadError("Max retry attempts reached"))
     }
 }

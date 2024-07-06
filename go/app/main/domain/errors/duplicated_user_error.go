@@ -1,4 +1,4 @@
-package exceptions
+package errors
 
 type DuplicatedUserError struct {
     CustomError

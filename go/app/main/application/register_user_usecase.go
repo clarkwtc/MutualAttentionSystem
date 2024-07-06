@@ -2,8 +2,8 @@ package application
 
 import (
     "mutualAttentionSystem/app/main/domain"
+    "mutualAttentionSystem/app/main/domain/errors"
     "mutualAttentionSystem/app/main/domain/events"
-    "mutualAttentionSystem/app/main/domain/exceptions"
 )
 
 type RegisterUserUseCase struct {
@@ -14,7 +14,7 @@ func (usecase *RegisterUserUseCase) Execute(username string) (*events.GetUserEve
     user := usecase.UserRepository.FindByUsername(username)
 
     if user != nil {
-        return nil, &exceptions.DuplicatedUserError{}
+        return nil, &errors.DuplicatedUserError{}
     }
 
     system := domain.NewMutualAttentionSysyem()

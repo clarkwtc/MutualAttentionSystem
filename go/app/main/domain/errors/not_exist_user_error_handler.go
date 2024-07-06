@@ -1,4 +1,4 @@
-package exceptions
+package errors
 
 import (
     "github.com/gin-gonic/gin"

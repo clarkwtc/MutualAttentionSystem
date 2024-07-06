@@ -3,7 +3,7 @@ package endpoints
 import (
     "github.com/gin-gonic/gin"
     "go.mongodb.org/mongo-driver/mongo"
-    "mutualAttentionSystem/app/main/domain/exceptions"
+    "mutualAttentionSystem/app/main/domain/errors"
     "mutualAttentionSystem/app/main/infrastructure/mongodb"
     "mutualAttentionSystem/app/main/infrastructure/repositories"
     "time"
@@ -33,10 +33,11 @@ func (router *Router) SetupUserResource() {
 
 func (router *Router) SetupErrorMiddleware() {
     errorMiddleware := ErrorMiddleware{}
-    errorMiddleware.RegisterException(exceptions.NewDuplicatedUserErrorHandler())
-    errorMiddleware.RegisterException(exceptions.NewNotExistUserErrorHandler())
-    errorMiddleware.RegisterException(exceptions.NewServiceOverloadErrorHandler())
-    errorMiddleware.RegisterException(exceptions.NewRequestLimitReachedErrorHandler())
+    errorMiddleware.RegisterException(errors.NewDuplicatedUserErrorHandler())
+    errorMiddleware.RegisterException(errors.NewNotExistUserErrorHandler())
+    errorMiddleware.RegisterException(errors.NewServiceOverloadErrorHandler())
+    errorMiddleware.RegisterException(errors.NewRequestLimitReachedErrorHandler())
+    errorMiddleware.RegisterException(errors.NewPageSizeTooLargeErrorHandler())
     router.Engine.Use(errorMiddleware.Execute())
 }
 
@@ -45,6 +46,6 @@ func (router *Router) SetupRetryMiddleware() {
 }
 
 func (router *Router) SetupRateLimiterMiddleware() {
-    middleware := NewRateLimiterMiddleware(1, time.Second, 1)
+    middleware := NewRateLimiterMiddleware(5000, time.Second, 1)
     router.Engine.Use(middleware.Execute())
 }
