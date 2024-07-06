@@ -14,8 +14,14 @@ func (handler *ErrorMiddleware) RegisterException(exceptionHandler exceptions.IE
     handler.Concrete = exceptionHandler
 }
 
-func (handler *ErrorMiddleware) ErrorMiddleware() gin.HandlerFunc {
+func (handler *ErrorMiddleware) Execute() gin.HandlerFunc {
     return func(ctx *gin.Context) {
+        if len(ctx.Errors) > 0 {
+            err := ctx.Errors.Last().Err
+            handler.Handle(ctx, err)
+            return
+        }
+
         ctx.Next()
 
         if len(ctx.Errors) > 0 {
