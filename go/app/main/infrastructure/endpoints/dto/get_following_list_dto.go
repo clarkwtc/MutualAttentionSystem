@@ -12,13 +12,15 @@ type GetFollowingListDTO struct {
     TotalPage  int
 }
 
-func ToGetFollowingListDTO(event *events.GetUserEvent, page int, limit int) *GetFollowingListDTO {
-    pageable := utils.NewPableable(page, limit, len(event.User.GetFollowings()))
-    
+func ToGetFollowingListDTO(event *events.GetUserEvent, page int, limit int) (*GetFollowingListDTO, error) {
+    pageable, err := utils.NewPableable(page, limit, len(event.User.GetFollowings()))
+    if err != nil {
+        return nil, err
+    }
     getFollowingListDTO := GetFollowingListDTO{make([]*GetUserItemDTO, 0), page, limit, pageable.TotalPage}
     for _, user := range event.User.GetFollowings() {
         getFollowingListDTO.Followings = append(getFollowingListDTO.Followings, ToGetUserItem(user))
     }
 
-    return &getFollowingListDTO
+    return &getFollowingListDTO, nil
 }

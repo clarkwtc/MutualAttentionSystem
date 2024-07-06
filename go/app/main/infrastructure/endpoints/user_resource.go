@@ -1,7 +1,6 @@
 package endpoints
 
 import (
-    "errors"
     "github.com/gin-gonic/gin"
     "mutualAttentionSystem/app/main/application"
     "mutualAttentionSystem/app/main/domain"
@@ -49,8 +48,6 @@ type GetUserQuery struct {
 }
 
 func (resource *UserResource) GetUser(ctx *gin.Context) {
-    ctx.Error(errors.New("asad"))
-    return
     var getUserQuery GetUserQuery
 
     err := ctx.ShouldBindQuery(&getUserQuery)
@@ -174,7 +171,11 @@ func (resource *UserResource) GetFollowingList(ctx *gin.Context) {
         return
     }
 
-    getFollowingListDTO := dto.ToGetFollowingListDTO(event, pageQuery.Page, pageQuery.Limit)
+    getFollowingListDTO, err := dto.ToGetFollowingListDTO(event, pageQuery.Page, pageQuery.Limit)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
     ctx.JSON(http.StatusOK, getFollowingListDTO)
 }
 
@@ -201,7 +202,11 @@ func (resource *UserResource) GetFanList(ctx *gin.Context) {
         return
     }
 
-    getFanListDTO := dto.ToGetFanListDTO(event, pageQuery.Page, pageQuery.Limit)
+    getFanListDTO, err := dto.ToGetFanListDTO(event, pageQuery.Page, pageQuery.Limit)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
     ctx.JSON(http.StatusOK, getFanListDTO)
 }
 
@@ -228,6 +233,10 @@ func (resource *UserResource) GetFriendList(ctx *gin.Context) {
         return
     }
 
-    getFriendListDTO := dto.ToGetFriendListDTO(user, pageQuery.Page, pageQuery.Limit)
+    getFriendListDTO, err := dto.ToGetFriendListDTO(user, pageQuery.Page, pageQuery.Limit)
+    if err != nil {
+        ctx.Error(err)
+        return
+    }
     ctx.JSON(http.StatusOK, getFriendListDTO)
 }

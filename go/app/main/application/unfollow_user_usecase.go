@@ -3,7 +3,7 @@ package application
 import (
     "github.com/google/uuid"
     "mutualAttentionSystem/app/main/domain"
-    "mutualAttentionSystem/app/main/domain/exceptions"
+    "mutualAttentionSystem/app/main/domain/errors"
 )
 
 type UnFollowUserUseCase struct {
@@ -18,7 +18,7 @@ func (usecase *UnFollowUserUseCase) Execute(userId string, followId string) erro
     users := usecase.UserRepository.FindByIds(usersId)
 
     if len(users) != 2 {
-        return &exceptions.NotExistUserError{}
+        return &errors.NotExistUserError{}
     }
 
     system := domain.NewMutualAttentionSysyem()

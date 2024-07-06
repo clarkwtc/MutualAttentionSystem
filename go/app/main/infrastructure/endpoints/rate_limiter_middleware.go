@@ -2,7 +2,7 @@ package endpoints
 
 import (
     "github.com/gin-gonic/gin"
-    "mutualAttentionSystem/app/main/domain/exceptions"
+    "mutualAttentionSystem/app/main/domain/errors"
     "net/http"
     "sync"
     "time"
@@ -35,7 +35,7 @@ func (handler *RateLimiterMiddleware) Execute() gin.HandlerFunc {
             handler.tokens -= 1
             ctx.Next()
         } else {
-            ctx.Error(&exceptions.RequestLimitReachedError{})
+            ctx.Error(&errors.RequestLimitReachedError{})
         }
     }
 }
