@@ -36,9 +36,15 @@ func (router *Router) SetupErrorMiddleware() {
     errorMiddleware.RegisterException(exceptions.NewDuplicatedUserErrorHandler())
     errorMiddleware.RegisterException(exceptions.NewNotExistUserErrorHandler())
     errorMiddleware.RegisterException(exceptions.NewServiceOverloadErrorHandler())
-    router.Engine.Use(errorMiddleware.ErrorMiddleware())
+    errorMiddleware.RegisterException(exceptions.NewRequestLimitReachedErrorHandler())
+    router.Engine.Use(errorMiddleware.Execute())
 }
 
 func (router *Router) SetupRetryMiddleware() {
     router.Engine.Use(RetryMiddleware(3, 200*time.Millisecond))
+}
+
+func (router *Router) SetupRateLimiterMiddleware() {
+    middleware := NewRateLimiterMiddleware(1, time.Second, 1)
+    router.Engine.Use(middleware.Execute())
 }

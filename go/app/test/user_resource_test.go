@@ -33,6 +33,7 @@ func init() {
     router := endpoints.Router{Engine: gin.Default()}
     r := mock.Router{UserRepository: userRepository,
         RelationshipRepository: relationshipRepository, Router: router}
+    r.SetupRateLimiterMiddleware()
     r.SetupErrorMiddleware()
     r.SetupRetryMiddleware()
     r.SetupMockUserResource()
