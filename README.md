@@ -2,27 +2,15 @@
 
 This system manages users and follows other users, if two users follow each other, they become friends.
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+This project was developed using different coding languages for Web API.
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+Golang
+* You can refer to the following link
+[Golang Project](https://github.com/clarkwtc/MutualAttentionSystem/tree/main/go)
 
-## Packaging and running the application
-
-The application can be packaged using:
-```shell script
-./mvnw package
-```
-
-## Running the application in dev mode
-
-You can run your application in dev mode that enables live coding using:
-```shell script
-./mvnw compile quarkus:dev
-```
-
-## Displaying API ui in swagger
-
-You can click swagger url when your application is running: http://localhost:8080/q/swagger-ui/#/
+Java
+* You can refer to the following link
+[Java Project](https://github.com/clarkwtc/MutualAttentionSystem/tree/main/java)
 
 ## System designing diagram
 ![alt text](images/MututalAttentionSystemDesign.png)
